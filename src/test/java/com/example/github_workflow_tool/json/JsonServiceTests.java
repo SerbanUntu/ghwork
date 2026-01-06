@@ -33,22 +33,26 @@ public class JsonServiceTests {
                     {
                       "id": 123,
                       "workflow_id": 321,
+                      "head_sha": "123abc",
                       "name": "ci",
                       "head_branch": "main",
                       "status": "completed",
                       "conclusion": "success",
                       "created_at": "2026-01-01T19:00:00Z",
-                      "updated_at": "2026-01-01T19:05:00Z"
+                      "updated_at": "2026-01-01T19:05:00Z",
+                      "run_started_at": "2026-01-01T19:05:00Z"
                     },
                     {
                       "id": 124,
                       "workflow_id": 421,
+                      "head_sha": "123abc",
                       "name": "test",
                       "head_branch": "dev",
                       "status": "queued",
                       "conclusion": null,
                       "created_at": "2026-01-01T20:00:00Z",
-                      "updated_at": "2026-01-01T20:05:10Z"
+                      "updated_at": "2026-01-01T20:05:10Z",
+                      "run_started_at": null
                     }
                   ]
                 }
@@ -57,23 +61,27 @@ public class JsonServiceTests {
         WorkflowRun run1 = new WorkflowRun(
                 123L,
                 321L,
+                "123abc",
                 "ci",
                 "main",
                 "completed",
                 "success",
                 makeInstant(19, 0, 0),
+                makeInstant(19, 5, 0),
                 makeInstant(19, 5, 0)
         );
 
         WorkflowRun run2 = new WorkflowRun(
                 124L,
                 421L,
+                "123abc",
                 "test",
                 "dev",
                 "queued",
                 null,
                 makeInstant(20, 0, 0),
-                makeInstant(20, 5, 10)
+                makeInstant(20, 5, 10),
+                null
         );
 
         WorkflowResponse expected = new WorkflowResponse(2, List.of(run1, run2));
