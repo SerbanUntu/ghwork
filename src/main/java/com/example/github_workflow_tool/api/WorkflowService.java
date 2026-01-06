@@ -40,4 +40,22 @@ public class WorkflowService {
         }
         return result;
     }
+
+    public Map<Long, WorkflowRunData> askForAdditionalRunData(
+            Map<Long, WorkflowRunData> initialState,
+            List<WorkflowRun> additionalRuns
+    ) {
+        Map<Long, WorkflowRunData> result = new HashMap<>(initialState);
+
+        for (WorkflowRun run : additionalRuns) {
+            JobResponse jobResponse = this.jobClient.fetchData(run.id());
+            Map<Long, Job> jobsMap = new HashMap<>();
+            for (Job job : jobResponse.jobs()) {
+                jobsMap.put(job.id(), job);
+            }
+            result.put(run.id(), new WorkflowRunData(run, jobsMap));
+        }
+
+        return result;
+    }
 }
