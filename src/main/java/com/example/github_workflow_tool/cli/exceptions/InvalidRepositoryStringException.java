@@ -5,9 +5,6 @@ package com.example.github_workflow_tool.cli.exceptions;
  */
 public class InvalidRepositoryStringException extends CLIException {
     public InvalidRepositoryStringException(String repositoryString) {
-        super(
-                "The owner/repo pair you provided is not valid, or you do not have read access for that repository: " +
-                        repositoryString
-        );
+        super("The owner/repo pair you provided is not valid: " + repositoryString);
     }
 }
