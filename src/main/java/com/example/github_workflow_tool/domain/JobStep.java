@@ -1,6 +1,6 @@
 package com.example.github_workflow_tool.domain;
 
-import java.util.*;
+import java.time.Instant;
 
 /**
  * The execution state of a step inside a job
@@ -10,7 +10,7 @@ public record JobStep(
         String status,
         String conclusion,
         int number,
-        Date startedAt,
-        Date completedAt
+        Instant startedAt,
+        Instant completedAt
 ) {
 }

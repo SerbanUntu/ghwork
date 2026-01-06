@@ -6,6 +6,8 @@ import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.time.Instant;
+
 /**
  * A wrapper around Google's Gson library, exposing only methods for serializing/deserializing domain data
  */
@@ -16,6 +18,7 @@ public class JsonService {
     public JsonService() {
         this.gson = new GsonBuilder()
                 .setDateFormat("yyyy-MM-dd'T'HH:mm:ssX")
+                .registerTypeAdapter(Instant.class, new InstantDeserializer())
                 .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
                 .create();
     }

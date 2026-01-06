@@ -1,5 +1,6 @@
 package com.example.github_workflow_tool.domain;
 
+import java.time.Instant;
 import java.util.*;
 
 /**
@@ -12,8 +13,8 @@ public record Job(
         String status,
         String conclusion,
         String name,
-        Date startedAt,
-        Date completedAt,
+        Instant startedAt,
+        Instant completedAt,
         List<JobStep> steps
 ) {
 }

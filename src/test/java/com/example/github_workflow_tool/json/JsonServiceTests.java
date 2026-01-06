@@ -9,22 +9,18 @@ import com.example.github_workflow_tool.domain.JobStep;
 import com.example.github_workflow_tool.domain.WorkflowRun;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.util.Date;
-import java.util.List;
+import java.time.*;
+import java.util.*;
 
 public class JsonServiceTests {
 
     private final JsonService sut = new JsonService();
 
-    private Date makeDate(int hour, int minute, int second) {
-        return Date.from(LocalDateTime.of(
+    private Instant makeInstant(int hour, int minute, int second) {
+        return LocalDateTime.of(
                 LocalDate.of(2026, 1, 1),
                 LocalTime.of(hour, minute, second)
-        ).atZone(ZoneId.of("UTC")).toInstant());
+        ).atZone(ZoneId.of("UTC")).toInstant();
     }
 
     @Test
@@ -65,8 +61,8 @@ public class JsonServiceTests {
                 "main",
                 "completed",
                 "success",
-                makeDate(19, 0, 0),
-                makeDate(19, 5, 0)
+                makeInstant(19, 0, 0),
+                makeInstant(19, 5, 0)
         );
 
         WorkflowRun run2 = new WorkflowRun(
@@ -76,8 +72,8 @@ public class JsonServiceTests {
                 "dev",
                 "queued",
                 null,
-                makeDate(20, 0, 0),
-                makeDate(20, 5, 10)
+                makeInstant(20, 0, 0),
+                makeInstant(20, 5, 10)
         );
 
         WorkflowResponse expected = new WorkflowResponse(2, List.of(run1, run2));
@@ -128,8 +124,8 @@ public class JsonServiceTests {
                 "completed",
                 "success",
                 1,
-                makeDate(10, 10, 10),
-                makeDate(10, 15, 20)
+                makeInstant(10, 10, 10),
+                makeInstant(10, 15, 20)
         );
 
         JobStep step2 = new JobStep(
@@ -137,7 +133,7 @@ public class JsonServiceTests {
                 "in_progress",
                 null,
                 2,
-                makeDate(10, 15, 20),
+                makeInstant(10, 15, 20),
                 null
         );
 
@@ -148,7 +144,7 @@ public class JsonServiceTests {
                 "in_progress",
                 null,
                 "Test",
-                makeDate(10, 10, 10),
+                makeInstant(10, 10, 10),
                 null,
                 List.of(step1, step2)
         );
