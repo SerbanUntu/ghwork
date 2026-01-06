@@ -1,57 +1,56 @@
 name: Java CI/CD
 
-on:
-  push:
-    branches:
-      - '**'
+on: [ push ]
+
+permissions:
+  contents: write
 
 jobs:
-  test:
-    name: Run Tests
+  build:
+    name: Build, Test and Package
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '21'
           distribution: 'temurin'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Check Formatting and Lint
+        run: ./gradlew checkstyleMain
 
       - name: Execute Gradle tests
         run: ./gradlew test
 
-  package:
-    name: Build & Package
-    needs: test
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Extract Project Version
+        id: get_version
+        if: github.ref == 'refs/heads/main'
+        run: |
+          VERSION=$(./gradlew properties -q | grep "^version:" | awk '{print $2}')
+          echo "PROJECT_VERSION=$VERSION" >> $GITHUB_ENV
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
+      - name: Create Portable Distribution
+        if: github.ref == 'refs/heads/main'
+        run: ./gradlew installDist -x test
+
+      - name: Zip Distribution
+        if: github.ref == 'refs/heads/main'
+        run: |
+          cd build/install
+          zip -r "../../ghwork-${{ env.PROJECT_VERSION }}.zip" ghwork
+
+      - name: Create GitHub Release
+        if: github.ref == 'refs/heads/main'
+        uses: ncipollo/release-action@v1
         with:
-          java-version: '21'
-          distribution: 'temurin'
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Build with Gradle
-        run: ./gradlew build -x test
-
-      - name: List built artifacts
-        run: ls -lh build/libs/
-
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: application-package
-          path: build/libs/*.jar
-          retention-days: 5
+          tag: "v${{ env.PROJECT_VERSION }}"
+          name: "v${{ env.PROJECT_VERSION }}"
+          artifacts: "ghwork-${{ env.PROJECT_VERSION }}.zip"
+          allowUpdates: true
+          replacesArtifacts: true

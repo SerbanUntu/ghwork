@@ -1,13 +1,25 @@
+import kotlin.collections.listOf
+
 plugins {
 	application
+	checkstyle
 }
 
 group = "com.example"
-version = "0.1.0-SNAPSHOT"
+version = "0.1.0"
 description = "Queries the GitHub workflows of a repository and displays live information."
 
+checkstyle {
+	toolVersion = "13.7.0"
+    sourceSets = listOf(project.sourceSets.main.get())
+}
+
+tasks.withType<Checkstyle> {
+	maxWarnings = 0
+}
+
 application {
-	mainClass.set("com.example.github_workflow_tool.GithubWorkflowToolApplication")
+	mainClass.set("com.example.ghwork.GhworkApplication")
 }
 
 tasks.named<Jar>("jar") {
@@ -27,8 +39,13 @@ repositories {
 }
 
 dependencies {
+	implementation(libs.gson)
+	implementation(libs.jansi)
 	testImplementation(libs.junit.jupiter)
 	testRuntimeOnly(libs.junit.platform.launcher)
+    implementation(libs.log4j.api)
+    runtimeOnly(libs.log4j.core)
+    implementation(libs.spring.context)
 }
 
 tasks.withType<Test> {
