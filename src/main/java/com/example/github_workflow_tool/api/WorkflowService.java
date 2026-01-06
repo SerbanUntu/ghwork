@@ -2,10 +2,7 @@ package com.example.github_workflow_tool.api;
 
 import com.example.github_workflow_tool.api.exceptions.APIException;
 import com.example.github_workflow_tool.cli.exceptions.CLIException;
-import com.example.github_workflow_tool.domain.AccessToken;
-import com.example.github_workflow_tool.domain.Job;
-import com.example.github_workflow_tool.domain.Repository;
-import com.example.github_workflow_tool.domain.WorkflowRun;
+import com.example.github_workflow_tool.domain.*;
 
 import java.util.*;
 
@@ -30,12 +27,16 @@ public class WorkflowService {
      * @throws APIException If a network fault occurs.
      * @throws CLIException If the repository name or access token provided by the user are invalid.
      */
-    public Map<WorkflowRun, List<Job>> queryApi() throws APIException, CLIException {
-        Map<WorkflowRun, List<Job>> result = new HashMap<>();
+    public Map<Long, WorkflowRunData> queryApi() throws APIException, CLIException {
+        Map<Long, WorkflowRunData> result = new HashMap<>();
         WorkflowResponse workflowResponse = this.workflowClient.fetchData();
         for (WorkflowRun run : workflowResponse.workflowRuns()) {
             JobResponse jobResponse = this.jobClient.fetchData(run.id());
-            result.put(run, jobResponse.jobs());
+            Map<Long, Job> jobsMap = new HashMap<>();
+            for (Job job : jobResponse.jobs()) {
+                jobsMap.put(job.id(), job);
+            }
+            result.put(run.id(), new WorkflowRunData(run, jobsMap));
         }
         return result;
     }
