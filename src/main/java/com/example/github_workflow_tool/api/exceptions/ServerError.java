@@ -7,6 +7,8 @@ public class ServerError extends APIException {
 
     public ServerError(int code) {
         super("An HTTP Server Error occurred. Status code " + code + ".");
-        assert code >= 500 && code <= 599;
+        if (code < 500 || code > 599) {
+            throw new IllegalArgumentException("ServerError expects a 5xx status code, got: " + code);
+        }
     }
 }

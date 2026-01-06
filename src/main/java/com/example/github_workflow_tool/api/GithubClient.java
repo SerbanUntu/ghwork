@@ -65,7 +65,10 @@ public abstract class GithubClient {
         HttpResponse<String> response;
         try {
             response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        } catch (IOException | InterruptedException e) {
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new APIException(e.getMessage());
+        } catch (IOException e) {
             throw new APIException(e.getMessage());
         }
         checkResponse(response);
