@@ -83,8 +83,8 @@ public abstract class GithubClient {
      */
     public GithubClient(Repository repository, AccessToken token) {
         this.repository = repository;
-        client = HttpClient.newHttpClient();
-        baseRoute = "https://api.github.com/repos/" + repository.getOwner() + "/" + repository.getRepository();
-        headers = new String[]{"X-GitHub-Api-Version", API_VERSION, "Authorization", "Bearer " + token.token()};
+        this.client = HttpClient.newHttpClient();
+        this.baseRoute = "https://api.github.com/repos/" + repository.getOwner() + "/" + repository.getRepository();
+        this.headers = new String[]{"X-GitHub-Api-Version", API_VERSION, "Authorization", "Bearer " + token.token()};
     }
 }
