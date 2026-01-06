@@ -19,6 +19,25 @@ public class WorkflowService {
         this.workflowClient = new WorkflowClient(repository, accessToken);
     }
 
+    public Map<Long, WorkflowRunData> mapJobsToWorkflows(
+            List<WorkflowRun> runs,
+            List<JobResponse> jobResponses
+    ) {
+        Map<Long, WorkflowRunData> result = new HashMap<>();
+
+        for (var run : runs) {
+            result.put(run.id(), new WorkflowRunData(run, new HashMap<>()));
+        }
+
+        for (var response : jobResponses) {
+            for (var job : response.jobs()) {
+                result.get(job.runId()).jobs().put(job.id(), job);
+            }
+        }
+
+        return result;
+    }
+
     /**
      * Returns a mapping of workflow runs to their respective job runs for the provided GitHub repository.
      * Makes multiple API requests under the hood.
@@ -28,17 +47,10 @@ public class WorkflowService {
      * @throws CLIException If the repository name or access token provided by the user are invalid.
      */
     public Map<Long, WorkflowRunData> queryApi() throws APIException, CLIException {
-        Map<Long, WorkflowRunData> result = new HashMap<>();
         WorkflowResponse workflowResponse = this.workflowClient.fetchData();
-        for (WorkflowRun run : workflowResponse.workflowRuns()) {
-            JobResponse jobResponse = this.jobClient.fetchData(run.id());
-            Map<Long, Job> jobsMap = new HashMap<>();
-            for (Job job : jobResponse.jobs()) {
-                jobsMap.put(job.id(), job);
-            }
-            result.put(run.id(), new WorkflowRunData(run, jobsMap));
-        }
-        return result;
+        List<Long> runIds = workflowResponse.workflowRuns().stream().map(WorkflowRun::id).toList();
+        List<JobResponse> jobResponses = this.jobClient.fetchData(runIds);
+        return mapJobsToWorkflows(workflowResponse.workflowRuns(), jobResponses);
     }
 
     public Map<Long, WorkflowRunData> askForAdditionalRunData(
@@ -46,16 +58,9 @@ public class WorkflowService {
             List<WorkflowRun> additionalRuns
     ) {
         Map<Long, WorkflowRunData> result = new HashMap<>(initialState);
-
-        for (WorkflowRun run : additionalRuns) {
-            JobResponse jobResponse = this.jobClient.fetchData(run.id());
-            Map<Long, Job> jobsMap = new HashMap<>();
-            for (Job job : jobResponse.jobs()) {
-                jobsMap.put(job.id(), job);
-            }
-            result.put(run.id(), new WorkflowRunData(run, jobsMap));
-        }
-
+        List<Long> runIds = additionalRuns.stream().map(WorkflowRun::id).toList();
+        List<JobResponse> jobResponses = this.jobClient.fetchData(runIds);
+        result.putAll(mapJobsToWorkflows(additionalRuns, jobResponses));
         return result;
     }
 }
