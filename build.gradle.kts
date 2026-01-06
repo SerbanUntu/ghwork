@@ -28,6 +28,7 @@ repositories {
 
 dependencies {
 	implementation(libs.gson)
+	implementation(libs.jansi)
 	testImplementation(libs.junit.jupiter)
 	testRuntimeOnly(libs.junit.platform.launcher)
 }
