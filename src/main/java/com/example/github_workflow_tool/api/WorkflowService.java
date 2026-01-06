@@ -1,5 +1,6 @@
 package com.example.github_workflow_tool.api;
 
+import com.example.github_workflow_tool.api.exceptions.APIException;
 import com.example.github_workflow_tool.cli.exceptions.CLIException;
 import com.example.github_workflow_tool.domain.AccessToken;
 import com.example.github_workflow_tool.domain.Job;

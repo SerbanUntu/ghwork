@@ -1,6 +1,6 @@
 package com.example.github_workflow_tool.domain;
 
-import java.util.Date;
+import java.util.*;
 
 /**
  * The execution state of a GitHub workflow

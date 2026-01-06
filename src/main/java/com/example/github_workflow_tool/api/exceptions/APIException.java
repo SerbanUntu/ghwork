@@ -1,7 +1,7 @@
-package com.example.github_workflow_tool.api;
+package com.example.github_workflow_tool.api.exceptions;
 
 /**
- * Throws when there is a URL parsing error, HTTP parsing error, or when the process is interrupted.
+ * Thrown when there is a URL parsing error, HTTP parsing error, or when the process is interrupted.
  * Should not throw due to an error made by the user.
  */
 public class APIException extends RuntimeException {
