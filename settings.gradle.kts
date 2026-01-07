@@ -1,1 +1,5 @@
-rootProject.name = "github_workflow_tool"
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+}
+
+rootProject.name = "ghwork"
