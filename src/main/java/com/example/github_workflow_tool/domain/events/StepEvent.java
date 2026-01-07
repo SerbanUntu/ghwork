@@ -1,6 +1,7 @@
 package com.example.github_workflow_tool.domain.events;
 
 import java.time.Instant;
+import java.util.Objects;
 
 /**
  * An event concerning the lifecycle of a step within a job
@@ -75,5 +76,18 @@ public abstract class StepEvent extends Event {
                 ") in job " +
                 this.getPrinter().formatName(jobName)
         );
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        StepEvent stepEvent = (StepEvent) o;
+        return stepNumber == stepEvent.stepNumber && Objects.equals(stepName, stepEvent.stepName) && Objects.equals(jobName, stepEvent.jobName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), stepName, stepNumber, jobName);
     }
 }

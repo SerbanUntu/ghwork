@@ -5,6 +5,7 @@ import com.example.github_workflow_tool.cli.CLIPrinter;
 import static org.fusesource.jansi.Ansi.*;
 
 import java.time.Instant;
+import java.util.Objects;
 
 /**
  * A generic event concerning a GitHub workflow that is of interest to the user.
@@ -135,4 +136,16 @@ public abstract class Event implements Comparable<Event> {
      * @return A human-friendly colored string representing the event data
      */
     public abstract String prettyPrint();
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Event event = (Event) o;
+        return runId == event.runId && Objects.equals(timestamp, event.timestamp) && Objects.equals(branchName, event.branchName) && Objects.equals(commitSha, event.commitSha);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(timestamp, branchName, commitSha, runId);
+    }
 }

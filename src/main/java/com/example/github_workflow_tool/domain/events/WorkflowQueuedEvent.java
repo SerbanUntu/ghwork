@@ -1,6 +1,7 @@
 package com.example.github_workflow_tool.domain.events;
 
 import java.time.Instant;
+import java.util.Objects;
 
 import static org.fusesource.jansi.Ansi.*;
 
@@ -87,5 +88,18 @@ public class WorkflowQueuedEvent extends Event {
                 " Workflow " +
                 this.getPrinter().formatName(this.workflowName)
         );
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        WorkflowQueuedEvent that = (WorkflowQueuedEvent) o;
+        return Objects.equals(workflowName, that.workflowName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), workflowName);
     }
 }

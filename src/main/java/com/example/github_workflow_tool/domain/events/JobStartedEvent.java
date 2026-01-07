@@ -21,6 +21,18 @@ public class JobStartedEvent extends JobEvent {
     }
 
     /**
+     * Used for determining which event to print first,
+     * when there are multiple events that happened at the same instant.
+     * An event with a lower order is printed before an event with a higher order with the same timestamp.
+     *
+     * @return The order of the event.
+     */
+    @Override
+    protected int getOrder() {
+        return 2;
+    }
+
+    /**
      * Getter for the ANSI color for this event tag
      *
      * @return The ANSI color for this event tag

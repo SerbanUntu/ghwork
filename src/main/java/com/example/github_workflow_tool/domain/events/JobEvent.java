@@ -1,6 +1,7 @@
 package com.example.github_workflow_tool.domain.events;
 
 import java.time.Instant;
+import java.util.Objects;
 
 /**
  * An event concerning the lifecycle of a job within a run
@@ -21,18 +22,6 @@ public abstract class JobEvent extends Event {
         super(timestamp, branchName, commitSha, runId);
         this.jobName = jobName;
         this.workflowName = workflowName;
-    }
-
-    /**
-     * Used for determining which event to print first,
-     * when there are multiple events that happened at the same instant.
-     * An event with a lower order is printed before an event with a higher order with the same timestamp.
-     *
-     * @return The order of the event.
-     */
-    @Override
-    protected int getOrder() {
-        return 5;
     }
 
     /**
@@ -70,5 +59,18 @@ public abstract class JobEvent extends Event {
                 " in workflow " +
                 this.getPrinter().formatName(workflowName)
         );
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        JobEvent jobEvent = (JobEvent) o;
+        return Objects.equals(jobName, jobEvent.jobName) && Objects.equals(workflowName, jobEvent.workflowName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), jobName, workflowName);
     }
 }

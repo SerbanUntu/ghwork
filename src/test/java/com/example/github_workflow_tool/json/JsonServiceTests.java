@@ -14,11 +14,13 @@ import java.util.*;
 
 public class JsonServiceTests {
 
+    private static final LocalDate referenceDate = LocalDate.of(2026, 1, 1);
+
     private final JsonService sut = new JsonService();
 
     private Instant makeInstant(int hour, int minute, int second) {
         return LocalDateTime.of(
-                LocalDate.of(2026, 1, 1),
+                referenceDate,
                 LocalTime.of(hour, minute, second)
         ).atZone(ZoneId.of("UTC")).toInstant();
     }
