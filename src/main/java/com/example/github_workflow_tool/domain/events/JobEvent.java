@@ -49,6 +49,7 @@ public abstract class JobEvent extends Event {
      *
      * @return The indentation of the event tag for this event
      */
+    @Override
     protected int getEventTagIndentation() {
         return 0;
     }

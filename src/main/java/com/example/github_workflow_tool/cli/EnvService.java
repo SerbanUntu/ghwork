@@ -3,6 +3,7 @@ package com.example.github_workflow_tool.cli;
 import com.example.github_workflow_tool.cli.exceptions.EnvException;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 
 public class EnvService {
@@ -11,7 +12,12 @@ public class EnvService {
 
     public EnvService() throws EnvException {
         try {
-            this.properties.load(EnvService.class.getClassLoader().getResourceAsStream("application.properties"));
+            InputStream resourceStream =
+                    EnvService.class.getClassLoader().getResourceAsStream("application.properties");
+            if (resourceStream == null) {
+                throw new EnvException("The application.properties file could not be found");
+            }
+            this.properties.load(resourceStream);
         } catch (IOException e) {
             throw new EnvException(e.getMessage());
         }

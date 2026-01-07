@@ -56,8 +56,8 @@ public class JobClient extends GithubClient {
         List<CompletableFuture<HttpResponse<String>>> futures = uris
                 .stream()
                 .map(uri -> {
-                    if (envService.isDebugPrintingEnabled()) {
-                        System.out.println("GET request: " + uri);
+                    if (this.envService.isDebugPrintingEnabled()) {
+                        System.out.println("[DEBUG] GET request: " + uri);
                     }
                     return HttpRequest.newBuilder().uri(uri).headers(headers).build();
                 })
@@ -77,11 +77,14 @@ public class JobClient extends GithubClient {
                         Thread.currentThread().interrupt();
                         throw new APIException(e.getMessage());
                     } catch (ExecutionException e) {
-                        throw new APIException(e.getMessage());
+                        Throwable cause = e.getCause();
+                        throw new APIException(cause == null ? e.getMessage() : cause.getMessage());
                     }
                 })
                 .filter(Objects::nonNull)
-                .map(response -> jsonService.parseJobResponse(response.body()))
+                .map(HttpResponse::body)
+                .filter(Objects::nonNull)
+                .map(jsonService::parseJobResponse)
                 .toList();
     }
 }
