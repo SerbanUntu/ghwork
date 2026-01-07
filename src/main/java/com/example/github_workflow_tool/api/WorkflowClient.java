@@ -40,6 +40,9 @@ public class WorkflowClient extends GithubClient {
      * @throws CLIException If the repository name or access token provided by the user are invalid.
      */
     public WorkflowResponse fetchData() throws APIException, CLIException {
+        if (envService.isDebugPrintingEnabled()) {
+            System.out.println("GET request: " + this.request.uri().toString());
+        }
         var response = getResponse(this.request);
         return jsonService.parseWorkflowResponse(response.body());
     }
