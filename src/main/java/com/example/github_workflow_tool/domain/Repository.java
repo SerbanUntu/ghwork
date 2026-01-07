@@ -2,12 +2,13 @@ package com.example.github_workflow_tool.domain;
 
 import com.example.github_workflow_tool.cli.exceptions.InvalidRepositoryStringException;
 
+import java.io.Serializable;
 import java.util.*;
 
 /**
  * Stores data about a GitHub repository owner name and repository name.
  */
-public class Repository {
+public class Repository implements Serializable {
 
     /**
      * The owner of the repository (e.g., "facebook").

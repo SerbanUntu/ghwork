@@ -2,6 +2,7 @@ package com.example.github_workflow_tool.domain;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.io.Serializable;
 import java.time.Instant;
 
 /**
@@ -18,5 +19,5 @@ public record WorkflowRun(
         Instant createdAt,
         Instant updatedAt,
         @SerializedName("run_started_at") Instant startedAt
-) {
+) implements Serializable {
 }
