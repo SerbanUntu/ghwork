@@ -64,6 +64,7 @@ public class GithubWorkflowToolApplication {
                     Thread.sleep(timeToWait);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
+                    break;
                 }
                 lastApiCallTimestamp = Instant.now();
 
