@@ -14,10 +14,11 @@ public class JobFinishedEvent extends JobEvent {
             String branchName,
             String commitSha,
             long runId,
+            long jobId,
             String jobName,
             String workflowName
     ) {
-        super(timestamp, branchName, commitSha, runId, jobName, workflowName);
+        super(timestamp, branchName, commitSha, runId, jobId, jobName, workflowName);
     }
 
     /**

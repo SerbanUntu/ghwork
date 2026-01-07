@@ -2,12 +2,14 @@ package com.example.github_workflow_tool.domain.events;
 
 import java.time.Instant;
 import java.util.Objects;
+import java.util.OptionalLong;
 
 /**
  * An event concerning the lifecycle of a step within a job
  */
 public abstract class StepEvent extends Event {
 
+    private final long jobId;
     private final String stepName;
     private final int stepNumber;
     private final String jobName;
@@ -17,14 +19,36 @@ public abstract class StepEvent extends Event {
             String branchName,
             String commitSha,
             long runId,
+            long jobId,
             String stepName,
             int stepNumber,
             String jobName
     ) {
         super(timestamp, branchName, commitSha, runId);
+        this.jobId = jobId;
         this.stepName = stepName;
         this.stepNumber = stepNumber;
         this.jobName = jobName;
+    }
+
+    /**
+     * Returns the job id of an event if it has one
+     *
+     * @return The job id of an event, wrapped in an {@link OptionalLong}
+     */
+    @Override
+    protected OptionalLong getJobIdForComparison() {
+        return OptionalLong.of(this.jobId);
+    }
+
+    /**
+     * Returns the step number of an event if it has one
+     *
+     * @return The step number of an event, wrapped in an {@link OptionalLong}
+     */
+    @Override
+    protected OptionalLong getStepNumberForComparison() {
+        return OptionalLong.of(this.stepNumber);
     }
 
     /**
