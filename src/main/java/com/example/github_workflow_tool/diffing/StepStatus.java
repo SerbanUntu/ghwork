@@ -1,5 +1,8 @@
 package com.example.github_workflow_tool.diffing;
 
+/**
+ * Maps a job step state to a discrete point in time, to aid comparison
+ */
 public enum StepStatus {
     INITIAL(0),
     IN_PROGRESS(1),

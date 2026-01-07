@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.time.Instant;
 
 /**
- * The execution state of a GitHub workflow
+ * The execution state of a GitHub workflow (excluding jobs)
  */
 public record WorkflowRun(
         long id,

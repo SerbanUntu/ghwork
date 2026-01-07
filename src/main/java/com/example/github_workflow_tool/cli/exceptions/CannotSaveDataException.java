@@ -1,5 +1,8 @@
 package com.example.github_workflow_tool.cli.exceptions;
 
+/**
+ * Thrown when the application cannot save its data to its dedicated file.
+ */
 public class CannotSaveDataException extends StorageException {
 
     public CannotSaveDataException() {

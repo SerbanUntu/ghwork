@@ -6,6 +6,9 @@ import static org.fusesource.jansi.Ansi.*;
 
 import java.time.Instant;
 
+/**
+ * A generic event concerning a GitHub workflow that is of interest to the user.
+ */
 public abstract class Event implements Comparable<Event> {
 
     private final Instant timestamp;
@@ -69,6 +72,14 @@ public abstract class Event implements Comparable<Event> {
      */
     protected abstract int getEventTagIndentation();
 
+    /**
+     * Returns an ANSI string in the following format, shared by all events: {@code timestamp Run xxx$ TAG}
+     * The "$" indicates that the digits are the last 3 digits of the full ID.
+     * The run IDs are color coded, with a random color corresponding to each (full) ID.
+     * The tag is an indicator such as "STARTED" or "SUCCEEDED".
+     *
+     * @return The ANSI prefix of an event
+     */
     protected String getEventPrefix() {
         return ansi()
                 .a(this.getPrinter().formatTimestamp(this.getTimestamp()))
@@ -83,6 +94,13 @@ public abstract class Event implements Comparable<Event> {
                 .toString();
     }
 
+    /**
+     * Appends the branch name and commit sha for an event, in the format branch@commit,
+     * with the necessary padding to ensure the line spans the required length precisely.
+     *
+     * @param eventDataAnsiString The rest of the string, not containing the branch and commit sha
+     * @return The input string with the branch and commit appended
+     */
     protected String appendBranchAndCommitSha(String eventDataAnsiString) {
         return eventDataAnsiString +
                 this.getPrinter().getPaddingBeforeBranch(eventDataAnsiString, this.getBranchName()) +

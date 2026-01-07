@@ -4,6 +4,9 @@ import java.time.Instant;
 
 import static org.fusesource.jansi.Ansi.*;
 
+/**
+ * A workflow run being queued for execution on a server
+ */
 public class WorkflowQueuedEvent extends Event {
 
     private final String workflowName;

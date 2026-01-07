@@ -4,6 +4,9 @@ import static org.fusesource.jansi.Ansi.*;
 
 import java.time.Instant;
 
+/**
+ * A step within a job finishing unsuccessfully
+ */
 public class StepFailedEvent extends StepEvent {
 
     public StepFailedEvent(

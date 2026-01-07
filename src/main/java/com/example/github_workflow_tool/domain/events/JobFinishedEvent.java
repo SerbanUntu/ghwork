@@ -4,6 +4,9 @@ import java.time.Instant;
 
 import static org.fusesource.jansi.Ansi.*;
 
+/**
+ * A job within a run finishing execution
+ */
 public class JobFinishedEvent extends JobEvent {
 
     public JobFinishedEvent(

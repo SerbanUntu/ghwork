@@ -13,6 +13,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
+/**
+ * Persists and retrieves the persisted application data. Abstracts operations with the file system.
+ */
 public class StorageService {
 
     private final Path appDir;
@@ -39,6 +42,12 @@ public class StorageService {
         this.filePath = this.appDir.resolve(FILENAME);
     }
 
+    /**
+     * Validates an object read from the {@link ObjectInputStream} before casting it to the tool state class.
+     * @param inputObject A plain object, directly read from the input stream.
+     * @return The cast object
+     * @throws ClassCastException If the object does not respect the structure of the tool state class
+     */
     private Map<Repository, ToolState> tryCastingInput(Object inputObject) throws ClassCastException {
         if (inputObject instanceof Map<?, ?> objectMap) {
             boolean isValidMap = objectMap
@@ -54,6 +63,11 @@ public class StorageService {
         throw new ClassCastException("Read object cannot be cast into a map of repositories to tool states.");
     }
 
+    /**
+     * Deletes the malformed storage file
+     *
+     * @throws StorageException If the storage file of the application cannot be deleted
+     */
     private void recoverFiles() throws StorageException {
         try {
             Files.deleteIfExists(this.filePath);
@@ -62,6 +76,12 @@ public class StorageService {
         }
     }
 
+    /**
+     * Retrieve the previous application state from the file system upon startup
+     *
+     * @return The persisted application state
+     * @throws StorageException If the application state could not be retrieved
+     */
     public Map<Repository, ToolState> retrieve() throws StorageException {
         try {
             if (!Files.exists(this.appDir)) {
@@ -93,6 +113,12 @@ public class StorageService {
         }
     }
 
+    /**
+     * Persist the application state to the file system
+     *
+     * @param toolStateByRepo The application state to save
+     * @throws StorageException If the application state could not be saved
+     */
     public void save(Map<Repository, ToolState> toolStateByRepo) throws StorageException {
         try (FileOutputStream fileOutputStream = new FileOutputStream(this.filePath.toFile())) {
             try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream)) {

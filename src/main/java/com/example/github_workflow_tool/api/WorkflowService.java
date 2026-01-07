@@ -20,6 +20,14 @@ public class WorkflowService {
         this.workflowClient = new WorkflowClient(repository, accessToken);
     }
 
+    /**
+     * Maps a list of runs and a list of jobs to an indexed map of {@link WorkflowRunData} objects
+     * that contain the jobs for each workflow run
+     *
+     * @param runs The workflow runs from the API
+     * @param jobResponses The job responses containing jobs corresponding to the given runs
+     * @return A mapping of runs and jobs nested inside an indexed map of {@link WorkflowRunData} objects
+     */
     public Map<Long, WorkflowRunData> mapJobsToWorkflows(
             List<WorkflowRun> runs,
             List<JobResponse> jobResponses
@@ -58,6 +66,16 @@ public class WorkflowService {
         return mapJobsToWorkflows(workflowResponse.workflowRuns(), jobResponses);
     }
 
+    /**
+     * Augments the provided initial list of runs to include runs that were in the stored state but not returned
+     * by the API call, presumably because they are completed.
+     *
+     * @param initialState The list of runs saved by the application
+     * @param additionalRuns The list of runs to fetch the details for, from the API
+     * @return A mapping of workflow runs to their respective job runs, including runs and jobs that were in the initial state but not in the new API state.
+     * @throws APIException If a network fault occurs.
+     * @throws CLIException If the repository name or access token provided by the user are invalid.
+     */
     public Map<Long, WorkflowRunData> askForAdditionalRunData(
             Map<Long, WorkflowRunData> initialState,
             List<WorkflowRun> additionalRuns
@@ -69,6 +87,13 @@ public class WorkflowService {
         return result;
     }
 
+    /**
+     * Returns a set of ids corresponding to runs that have finished, as marked by the
+     * {@code conclusion()} field not being null
+     *
+     * @param runsState The runs containing jobs, indexed by id
+     * @return The runs that have not finished, indexed by id
+     */
     public Set<Long> getRunsIdsToIgnore(Map<Long, WorkflowRunData> runsState) {
         return runsState.values()
                 .stream()
@@ -78,6 +103,15 @@ public class WorkflowService {
                 .collect(Collectors.toSet());
     }
 
+    /**
+     * Perform set difference (A - B) on two sets of runs.
+     *
+     * @param first The first set of runs, indexed by id and containing jobs
+     * @param second The second set of runs, indexed by id and containing jobs
+     * @param ignoredRunIds The runs to not be added in the resulting list,
+     *                      even if they are present in the first set
+     * @return The set difference of the two sets of runs.
+     */
     public List<WorkflowRun> getRunsSetDifference(
             Map<Long, WorkflowRunData> first,
             Map<Long, WorkflowRunData> second,

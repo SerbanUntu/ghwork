@@ -4,6 +4,9 @@ import java.time.Instant;
 
 import static org.fusesource.jansi.Ansi.*;
 
+/**
+ * A step within a job finishing successfully
+ */
 public class StepSucceededEvent extends StepEvent {
 
     public StepSucceededEvent(

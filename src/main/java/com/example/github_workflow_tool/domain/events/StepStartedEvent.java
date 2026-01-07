@@ -4,6 +4,9 @@ import static org.fusesource.jansi.Ansi.*;
 
 import java.time.Instant;
 
+/**
+ * A step within a job starting execution
+ */
 public class StepStartedEvent extends StepEvent {
 
     public StepStartedEvent(

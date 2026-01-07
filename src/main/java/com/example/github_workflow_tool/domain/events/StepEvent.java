@@ -2,6 +2,9 @@ package com.example.github_workflow_tool.domain.events;
 
 import java.time.Instant;
 
+/**
+ * An event concerning the lifecycle of a step within a job
+ */
 public abstract class StepEvent extends Event {
 
     private final String stepName;

@@ -2,6 +2,9 @@ package com.example.github_workflow_tool.domain.events;
 
 import java.time.Instant;
 
+/**
+ * An event concerning the lifecycle of a job within a run
+ */
 public abstract class JobEvent extends Event {
 
     private final String jobName;

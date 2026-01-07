@@ -18,9 +18,10 @@ public class DiffingService {
      * Returns a list of all the domain events that needed to happen
      * to obtain the `afterState` from the `beforeState`
      *
-     * @param beforeState The mapping of
+     * @param beforeState The mapping of workflow runs to job runs in the current saved state.
      * @param afterState  The mapping of workflow runs to job runs at some time
-     *                    after the before state. Must include all keys that are included in the before state.
+     *                    after the before state, coming from fresh API data.
+     *                    Must include all keys that are included in the before state.
      * @return The list of domain events that occurred between the two states, sorted by increasing timestamp.
      */
     public List<Event> computeDiff(
@@ -63,6 +64,11 @@ public class DiffingService {
         return events;
     }
 
+    /**
+     * Maps the API state in the `status` and `conclusion` fields to a domain status used for ordering
+     * @param workflowRun The run containing the fields from the API
+     * @return The domain status used for ordering
+     */
     private WorkflowRunStatus getWorkflowRunStatus(WorkflowRun workflowRun) {
         if (workflowRun == null) return WorkflowRunStatus.INITIAL;
         return switch (workflowRun.status()) {
@@ -71,6 +77,11 @@ public class DiffingService {
         };
     }
 
+    /**
+     * Maps the API state in the `status` and `conclusion` fields to a domain status used for ordering
+     * @param job The job containing the fields from the API
+     * @return The domain status used for ordering
+     */
     private JobStatus getJobStatus(Job job) {
         if (job == null) return JobStatus.INITIAL;
         if (job.status().equals("in_progress")) return JobStatus.IN_PROGRESS;
@@ -78,6 +89,11 @@ public class DiffingService {
         return JobStatus.INITIAL;
     }
 
+    /**
+     * Maps the API state in the `status` and `conclusion` fields to a domain status used for ordering
+     * @param step The job step containing the fields from the API
+     * @return The domain status used for ordering
+     */
     private StepStatus getStepStatus(JobStep step) {
         if (step == null) return StepStatus.INITIAL;
         if (step.status().equals("queued")) return StepStatus.INITIAL;
@@ -91,6 +107,13 @@ public class DiffingService {
         };
     }
 
+    /**
+     * Diffs two run states to determine a list of events that happened to obtain the new state from the old state.
+     *
+     * @param runBefore The previous run state
+     * @param runAfter The new run state
+     * @return A list of events that occurred to obtain the new state from the old state.
+     */
     private List<Event> compareWorkflowRuns(WorkflowRun runBefore, WorkflowRun runAfter) {
         List<Event> events = new ArrayList<>();
         WorkflowRunStatus statusBefore = getWorkflowRunStatus(runBefore);
@@ -111,6 +134,14 @@ public class DiffingService {
         return events;
     }
 
+    /**
+     * Diffs two job states to determine a list of events that happened to obtain the new state from the old state.
+     *
+     * @param run The run that the job is a part of
+     * @param jobBefore The previous job state
+     * @param jobAfter The new job state
+     * @return A list of events that occurred to obtain the new state from the old state.
+     */
     private List<Event> compareJobs(WorkflowRun run, Job jobBefore, Job jobAfter) {
         List<Event> events = new ArrayList<>();
         JobStatus statusBefore = getJobStatus(jobBefore);
@@ -145,6 +176,15 @@ public class DiffingService {
         return events;
     }
 
+    /**
+     * Diffs two job step states to determine a list of events that happened to obtain the new state from the old state.
+     *
+     * @param run The run that the step is a part of
+     * @param job The job that the step is a part of
+     * @param stepBefore The previous job step state
+     * @param stepAfter The new job step state
+     * @return A list of events that occurred to obtain the new state from the old state.
+     */
     private List<Event> compareSteps(WorkflowRun run, Job job, JobStep stepBefore, JobStep stepAfter) {
         List<Event> events = new ArrayList<>();
         StepStatus statusBefore = getStepStatus(stepBefore);
