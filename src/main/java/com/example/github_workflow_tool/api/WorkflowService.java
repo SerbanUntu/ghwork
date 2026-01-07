@@ -87,7 +87,7 @@ public class WorkflowService {
                 .values()
                 .stream()
                 .map(WorkflowRunData::run)
-                .filter(run -> !second.containsKey(run.id()) && ignoredRunIds.contains(run.id()))
+                .filter(run -> !second.containsKey(run.id()) && !ignoredRunIds.contains(run.id()))
                 .toList();
     }
 }
