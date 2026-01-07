@@ -1,12 +1,32 @@
+import kotlin.collections.listOf
+
 plugins {
-	java
-	id("org.springframework.boot") version "3.5.9"
-	id("io.spring.dependency-management") version "1.1.7"
+	application
+	checkstyle
 }
 
 group = "com.example"
-version = "0.0.1-SNAPSHOT"
+version = "0.1.0"
 description = "Queries the GitHub workflows of a repository and displays live information."
+
+checkstyle {
+	toolVersion = "13.7.0"
+    sourceSets = listOf(project.sourceSets.main.get())
+}
+
+tasks.withType<Checkstyle> {
+	maxWarnings = 0
+}
+
+application {
+	mainClass.set("com.example.ghwork.GhworkApplication")
+}
+
+tasks.named<Jar>("jar") {
+	manifest {
+		attributes["Main-Class"] = application.mainClass.get()
+	}
+}
 
 java {
 	toolchain {
@@ -18,19 +38,14 @@ repositories {
 	mavenCentral()
 }
 
-extra["springShellVersion"] = "3.4.1"
-
 dependencies {
-	implementation("org.springframework.shell:spring-shell-starter")
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
-	testImplementation("org.springframework.shell:spring-shell-starter-test")
-	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-}
-
-dependencyManagement {
-	imports {
-		mavenBom("org.springframework.shell:spring-shell-dependencies:${property("springShellVersion")}")
-	}
+	implementation(libs.gson)
+	implementation(libs.jansi)
+	testImplementation(libs.junit.jupiter)
+	testRuntimeOnly(libs.junit.platform.launcher)
+    implementation(libs.log4j.api)
+    runtimeOnly(libs.log4j.core)
+    implementation(libs.spring.context)
 }
 
 tasks.withType<Test> {
