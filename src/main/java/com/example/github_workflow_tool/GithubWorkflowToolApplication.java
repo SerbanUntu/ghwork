@@ -72,6 +72,7 @@ public class GithubWorkflowToolApplication {
 
                 if (!toolRanBefore) {
                     toolStates.put(parsedArgs.repository(), new ToolState(newState, runIdsToIgnore));
+                    storageService.save(toolStates);
                     toolRanBefore = true;
                     continue;
                 }
