@@ -7,7 +7,7 @@ version = "0.1.0"
 description = "Queries the GitHub workflows of a repository and displays live information."
 
 application {
-	mainClass.set("com.example.github_workflow_tool.GithubWorkflowToolApplication")
+	mainClass.set("com.example.ghwork.GhworkApplication")
 }
 
 tasks.named<Jar>("jar") {
