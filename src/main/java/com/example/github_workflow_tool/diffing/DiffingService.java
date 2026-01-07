@@ -156,6 +156,7 @@ public class DiffingService {
                     run.headBranch(),
                     jobAfter.headSha(),
                     run.id(),
+                    jobAfter.id(),
                     jobAfter.name(),
                     run.name()
             ));
@@ -168,6 +169,7 @@ public class DiffingService {
                     run.headBranch(),
                     jobAfter.headSha(),
                     run.id(),
+                    jobAfter.id(),
                     jobAfter.name(),
                     run.name()
             ));
@@ -199,6 +201,7 @@ public class DiffingService {
                     run.headBranch(),
                     run.headSha(),
                     run.id(),
+                    job.id(),
                     stepAfter.name(),
                     stepAfter.number(),
                     job.name()
@@ -212,6 +215,7 @@ public class DiffingService {
                     run.headBranch(),
                     run.headSha(),
                     run.id(),
+                    job.id(),
                     stepAfter.name(),
                     stepAfter.number(),
                     job.name()
@@ -225,6 +229,7 @@ public class DiffingService {
                     run.headBranch(),
                     run.headSha(),
                     run.id(),
+                    job.id(),
                     stepAfter.name(),
                     stepAfter.number(),
                     job.name()

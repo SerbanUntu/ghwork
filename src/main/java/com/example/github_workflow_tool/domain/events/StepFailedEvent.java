@@ -14,11 +14,12 @@ public class StepFailedEvent extends StepEvent {
             String branchName,
             String commitSha,
             long runId,
+            long jobId,
             String stepName,
             int stepNumber,
             String jobName
     ) {
-        super(timestamp, branchName, commitSha, runId, stepName, stepNumber, jobName);
+        super(timestamp, branchName, commitSha, runId, jobId, stepName, stepNumber, jobName);
     }
 
     /**

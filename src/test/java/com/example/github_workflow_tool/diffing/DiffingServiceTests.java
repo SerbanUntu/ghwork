@@ -63,7 +63,7 @@ public class DiffingServiceTests {
                 "completed",
                 "success",
                 1,
-                makeInstant(10, 2, 3),
+                makeInstant(10, 2, 1),
                 makeInstant(10, 3, 3)
         );
         JobStep step4After = new JobStep(
@@ -71,7 +71,7 @@ public class DiffingServiceTests {
                 "completed",
                 "success",
                 2,
-                makeInstant(10, 3, 4),
+                makeInstant(10, 3, 3),
                 makeInstant(10, 4, 4)
         );
         JobStep step5After = new JobStep(
@@ -111,8 +111,8 @@ public class DiffingServiceTests {
                 "completed",
                 "success",
                 "Build executable",
-                makeInstant(10, 2, 2),
-                makeInstant(10, 4, 5),
+                makeInstant(10, 2, 1),
+                makeInstant(10, 4, 4),
                 List.of(step3After, step4After)
         );
         Job job3After = new Job(
@@ -147,7 +147,7 @@ public class DiffingServiceTests {
                 "completed",
                 "success",
                 makeInstant(9, 59, 0),
-                makeInstant(10, 4, 5),
+                makeInstant(10, 4, 4),
                 makeInstant(10, 0, 0)
         );
         WorkflowRun run2After = new WorkflowRun(
@@ -177,6 +177,7 @@ public class DiffingServiceTests {
                         "dev", // run1After.headBranch()
                         "asdf", // run1After.headSha()
                         1L, // run1After.id()
+                        10L, // job1After.id()
                         "Finish Job", // step2After.name()
                         2, // step2After.number()
                         "Run tests" // job1After.name()
@@ -186,22 +187,25 @@ public class DiffingServiceTests {
                         "dev", // run1After.headBranch()
                         "asdf", // job1After.headSha()
                         1L, // run1After.id()
+                        10L, // job1After.id()
                         "Run tests", // job1After.name()
                         "CI" // run1After.name()
                 ),
                 new JobStartedEvent(
-                        makeInstant(10, 2, 2), // job2After.startedAt()
+                        makeInstant(10, 2, 1), // job2After.startedAt()
                         "dev", // run1After.headBranch()
                         "asdf", // job2After.headSha()
                         1L, // run1After.id()
+                        11L, // job2After.id()
                         "Build executable", // job2After.name()
                         "CI" // run1After.name()
                 ),
                 new StepStartedEvent(
-                        makeInstant(10, 2, 3), // step3After.startedAt()
+                        makeInstant(10, 2, 1), // step3After.startedAt()
                         "dev", // run1After.headBranch()
                         "asdf", // run1After.headSha()
                         1L, // run1After.id()
+                        11L, // job2After.id()
                         "Set up Job", // step3After.name()
                         1, // step3After.number()
                         "Build executable" // job2After.name()
@@ -211,15 +215,17 @@ public class DiffingServiceTests {
                         "dev", // run1After.headBranch()
                         "asdf", // run1After.headSha()
                         1L, // run1After.id()
+                        11L, // job2After.id()
                         "Set up Job", // step3After.name()
                         1, // step3After.number()
                         "Build executable" // job2After.name()
                 ),
                 new StepStartedEvent(
-                        makeInstant(10, 3, 4), // step4After.startedAt()
+                        makeInstant(10, 3, 3), // step4After.startedAt()
                         "dev", // run1After.headBranch()
                         "asdf", // run1After.headSha()
                         1L, // run1After.id()
+                        11L, // job2After.id()
                         "Finish Job", // step4After.name()
                         2, // step4After.number()
                         "Build executable" // job2After.name()
@@ -229,15 +235,17 @@ public class DiffingServiceTests {
                         "dev", // run1After.headBranch()
                         "asdf", // run1After.headSha()
                         1L, // run1After.id()
+                        11L, // job2After.id()
                         "Finish Job", // step4After.name()
                         2, // step4After.number()
                         "Build executable" // job2After.name()
                 ),
                 new JobFinishedEvent(
-                        makeInstant(10, 4, 5), // job2After.completedAt()
+                        makeInstant(10, 4, 4), // job2After.completedAt()
                         "dev", // run1After.headBranch()
                         "asdf", // job2After.headSha()
                         1L, // run1After.id()
+                        11L, // job2After.id()
                         "Build executable", // job2After.name()
                         "CI" // run1After.name()
                 ),
@@ -253,6 +261,7 @@ public class DiffingServiceTests {
                         "dev", // run2After.headBranch()
                         "asdf", // job3After.headSha()
                         2L, // run2After.id()
+                        12L, // job3After.id()
                         "Run tests", // job3After.name()
                         "CI" // run2After.name()
                 ),
@@ -261,6 +270,7 @@ public class DiffingServiceTests {
                         "dev", // run2After.headBranch()
                         "asdf", // run2After.headSha()
                         2L, // run2After.id()
+                        12L, // job3After.id()
                         "Set up Job", // step5After.name()
                         1, // step5After.number()
                         "Run tests" // job3After.name()

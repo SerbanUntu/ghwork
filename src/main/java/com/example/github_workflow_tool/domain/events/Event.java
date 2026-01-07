@@ -5,7 +5,7 @@ import com.example.github_workflow_tool.cli.CLIPrinter;
 import static org.fusesource.jansi.Ansi.*;
 
 import java.time.Instant;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * A generic event concerning a GitHub workflow that is of interest to the user.
@@ -25,14 +25,58 @@ public abstract class Event implements Comparable<Event> {
         this.runId = runId;
     }
 
+    /**
+     * Returns the result of a multi-condition comparison, where the
+     * comparison results are in decreasing importance
+     *
+     * @param comparisons A list of results of {@code compareTo()} functions
+     * @return The comparison result
+     */
+    private int getFirstNonZeroComparison(int... comparisons) {
+        for (int comparison : comparisons) {
+            if (comparison != 0) {
+                return comparison;
+            }
+        }
+        return comparisons[comparisons.length - 1];
+    }
+
+    /**
+     * Compares two long properties of events that may or may not have a value
+     *
+     * @param a The first optional property
+     * @param b The second optional property
+     * @return Zero (equality) if one of the long values is missing, otherwise their difference
+     */
+    private int compareOptionalLongs(OptionalLong a, OptionalLong b) {
+        if (a.isEmpty() || b.isEmpty()) return 0;
+        return (int) (a.getAsLong() - b.getAsLong());
+    }
+
     @Override
     public int compareTo(Event other) {
-        int timestampComparison = this.timestamp.compareTo(other.timestamp);
-        if (timestampComparison != 0) {
-            return timestampComparison;
-        }
-        return this.getOrder() - other.getOrder();
+        return getFirstNonZeroComparison(
+                this.timestamp.compareTo(other.timestamp),
+                (int) (this.runId - other.runId),
+                compareOptionalLongs(this.getJobIdForComparison(), other.getJobIdForComparison()),
+                compareOptionalLongs(this.getStepNumberForComparison(), other.getStepNumberForComparison()),
+                this.getOrder() - other.getOrder()
+        );
     }
+
+    /**
+     * Returns the job id of an event if it has one
+     *
+     * @return The job id of an event, wrapped in an {@link OptionalLong}
+     */
+    protected abstract OptionalLong getJobIdForComparison();
+
+    /**
+     * Returns the step number of an event if it has one
+     *
+     * @return The step number of an event, wrapped in an {@link OptionalLong}
+     */
+    protected abstract OptionalLong getStepNumberForComparison();
 
     /**
      * Used for determining which event to print first,

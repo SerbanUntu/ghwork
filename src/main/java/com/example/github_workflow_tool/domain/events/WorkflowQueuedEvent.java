@@ -2,6 +2,7 @@ package com.example.github_workflow_tool.domain.events;
 
 import java.time.Instant;
 import java.util.Objects;
+import java.util.OptionalLong;
 
 import static org.fusesource.jansi.Ansi.*;
 
@@ -21,6 +22,26 @@ public class WorkflowQueuedEvent extends Event {
     ) {
         super(timestamp, branchName, commitSha, runId);
         this.workflowName = workflowName;
+    }
+
+    /**
+     * Returns the job id of an event if it has one
+     *
+     * @return The job id of an event, wrapped in an {@link OptionalLong}
+     */
+    @Override
+    protected OptionalLong getJobIdForComparison() {
+        return OptionalLong.empty();
+    }
+
+    /**
+     * Returns the step number of an event if it has one
+     *
+     * @return The step number of an event, wrapped in an {@link OptionalLong}
+     */
+    @Override
+    protected OptionalLong getStepNumberForComparison() {
+        return OptionalLong.empty();
     }
 
     /**
