@@ -4,7 +4,7 @@ public enum StepStatus {
     INITIAL(0),
     IN_PROGRESS(1),
     FAILED(2),
-    SUCCEEDED(2);
+    SUCCEEDED(2); // Both FAILED and SUCCEEDED happen at an equivalent point in time
 
     private final int order;
 

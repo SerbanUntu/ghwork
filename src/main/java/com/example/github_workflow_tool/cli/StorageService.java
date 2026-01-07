@@ -77,18 +77,16 @@ public class StorageService {
             throw new CannotCreateStorageFileException();
         }
 
-        try (
-                FileInputStream fileInputStream = new FileInputStream(this.filePath.toFile())
-        ) {
-            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-            Object inputObject = objectInputStream.readObject();
-            objectInputStream.close();
-            Map<Repository, ToolState> castedInput = tryCastingInput(inputObject);
+        try (FileInputStream fileInputStream = new FileInputStream(this.filePath.toFile())) {
+            try (ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream)) {
+                Object inputObject = objectInputStream.readObject();
+                Map<Repository, ToolState> castedInput = tryCastingInput(inputObject);
 
-            if (this.envService.isDebugPrintingEnabled()) {
-                System.out.println("Read from file: " + this.filePath);
+                if (this.envService.isDebugPrintingEnabled()) {
+                    System.out.println("[DEBUG] Read from file: " + this.filePath);
+                }
+                return castedInput;
             }
-            return castedInput;
         } catch (ClassNotFoundException | ClassCastException | IOException e) {
             recoverFiles();
             return new HashMap<>();
@@ -96,15 +94,14 @@ public class StorageService {
     }
 
     public void save(Map<Repository, ToolState> toolStateByRepo) throws StorageException {
-        try (
-                FileOutputStream fileOutputStream = new FileOutputStream(this.filePath.toFile())
-        ) {
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-            objectOutputStream.writeObject(toolStateByRepo);
-            objectOutputStream.flush();
+        try (FileOutputStream fileOutputStream = new FileOutputStream(this.filePath.toFile())) {
+            try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream)) {
+                objectOutputStream.writeObject(toolStateByRepo);
+                objectOutputStream.flush();
 
-            if (this.envService.isDebugPrintingEnabled()) {
-                System.out.println("Saved to file: " + this.filePath);
+                if (this.envService.isDebugPrintingEnabled()) {
+                    System.out.println("[DEBUG] Saved to file: " + this.filePath);
+                }
             }
         } catch (IOException e) {
             throw new CannotSaveDataException();

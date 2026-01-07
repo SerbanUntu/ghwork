@@ -61,7 +61,7 @@ public class WorkflowService {
     public Map<Long, WorkflowRunData> askForAdditionalRunData(
             Map<Long, WorkflowRunData> initialState,
             List<WorkflowRun> additionalRuns
-    ) {
+    ) throws APIException, CLIException {
         Map<Long, WorkflowRunData> result = new HashMap<>(initialState);
         List<Long> runIds = additionalRuns.stream().map(WorkflowRun::id).toList();
         List<JobResponse> jobResponses = this.jobClient.fetchData(runIds);

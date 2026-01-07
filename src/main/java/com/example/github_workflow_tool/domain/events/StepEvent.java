@@ -2,8 +2,6 @@ package com.example.github_workflow_tool.domain.events;
 
 import java.time.Instant;
 
-import static org.fusesource.jansi.Ansi.ansi;
-
 public abstract class StepEvent extends Event {
 
     private final String stepName;
@@ -54,6 +52,7 @@ public abstract class StepEvent extends Event {
      *
      * @return The indentation of the event tag for this event
      */
+    @Override
     protected int getEventTagIndentation() {
         return 2;
     }
