@@ -77,9 +77,10 @@ public class StorageService {
             throw new CannotCreateStorageFileException();
         }
 
-        try (ObjectInputStream objectInputStream = new ObjectInputStream(
-                new FileInputStream(this.filePath.toFile())
-        )) {
+        try (
+                FileInputStream fileInputStream = new FileInputStream(this.filePath.toFile())
+        ) {
+            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
             Object inputObject = objectInputStream.readObject();
             objectInputStream.close();
             Map<Repository, ToolState> castedInput = tryCastingInput(inputObject);
@@ -95,9 +96,10 @@ public class StorageService {
     }
 
     public void save(Map<Repository, ToolState> toolStateByRepo) throws StorageException {
-        try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(
-                new FileOutputStream(this.filePath.toFile())
-        )) {
+        try (
+                FileOutputStream fileOutputStream = new FileOutputStream(this.filePath.toFile())
+        ) {
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
             objectOutputStream.writeObject(toolStateByRepo);
             objectOutputStream.flush();
 
