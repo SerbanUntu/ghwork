@@ -1,10 +1,14 @@
 package com.example.github_workflow_tool;
 
 import com.example.github_workflow_tool.api.WorkflowService;
+import com.example.github_workflow_tool.api.exceptions.APIException;
 import com.example.github_workflow_tool.cli.ArgumentParser;
 import com.example.github_workflow_tool.cli.CLIArguments;
 import com.example.github_workflow_tool.cli.CLIPrinter;
+import com.example.github_workflow_tool.cli.exceptions.CLIException;
 import com.example.github_workflow_tool.diffing.DiffingService;
+import com.example.github_workflow_tool.domain.Repository;
+import com.example.github_workflow_tool.domain.ToolState;
 import com.example.github_workflow_tool.domain.WorkflowRun;
 import com.example.github_workflow_tool.domain.WorkflowRunData;
 import com.example.github_workflow_tool.domain.events.Event;
@@ -28,8 +32,7 @@ public class GithubWorkflowToolApplication {
      */
     public static void main(String[] args) {
 
-        Map<Long, WorkflowRunData> currentState = new HashMap<>();
-        boolean toolRanBefore = false;
+        Map<Repository, ToolState> toolStates = new HashMap<>(); // TODO get from storage
 
         try {
             CLIArguments parsedArgs = (new ArgumentParser()).parse(args);
@@ -39,39 +42,56 @@ public class GithubWorkflowToolApplication {
             );
             DiffingService diffingService = new DiffingService();
             Instant lastApiCallTimestamp = null;
+            CLIPrinter cliPrinter = new CLIPrinter();
 
-            while (true) {
+            boolean toolRanBefore = true;
+            if (!toolStates.containsKey(parsedArgs.repository())) {
+                toolRanBefore = false;
+                toolStates.put(parsedArgs.repository(), new ToolState(new HashMap<>(), new HashSet<>()));
+            }
+
+            while (!Thread.currentThread().isInterrupted()) {
+                ToolState toolState = toolStates.get(parsedArgs.repository());
                 long timeToWait = 0L;
                 if (lastApiCallTimestamp != null) {
                     timeToWait = Math.max(0L, Instant
                             .now()
                             .until(lastApiCallTimestamp.plus(MINIMUM_REQUEST_INTERVAL), ChronoUnit.MILLIS));
                 }
-                Thread.sleep(timeToWait);
+                try {
+                    //noinspection BusyWait
+                    Thread.sleep(timeToWait);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
                 lastApiCallTimestamp = Instant.now();
 
-                Map<Long, WorkflowRunData> newState = workflowService.queryApi();
-                List<WorkflowRun> runsNotInTheNewState = currentState
-                        .values()
-                        .stream()
-                        .map(WorkflowRunData::run)
-                        .filter(run -> !newState.containsKey(run.id()))
-                        .toList();
+                Map<Long, WorkflowRunData> newState = workflowService.getCurrentRuns(toolState.ignoredRunIds());
+                Set<Long> runIdsToIgnore = workflowService.getRunsIdsToIgnore(newState);
+
+                if (!toolRanBefore) {
+                    toolStates.put(parsedArgs.repository(), new ToolState(newState, runIdsToIgnore));
+                    toolRanBefore = true;
+                    continue;
+                }
+                List<WorkflowRun> runsNotInTheNewState = workflowService.getRunsSetDifference(
+                        toolState.runs(), newState, toolState.ignoredRunIds()
+                );
 
                 // Ensures augmentedState is a superset of currentState
-                Map<Long, WorkflowRunData> augmentedState = workflowService.askForAdditionalRunData(
+                Map<Long, WorkflowRunData> augmentedNewState = workflowService.askForAdditionalRunData(
                         newState, runsNotInTheNewState
                 );
-                List<Event> workflowEvents = diffingService.computeDiff(currentState, augmentedState);
-                if (toolRanBefore) {
-                    System.out.println((new CLIPrinter()).prettyPrintOnSeparateLines(workflowEvents));
+                List<Event> workflowEvents = diffingService.computeDiff(toolState.runs(), augmentedNewState);
+                if (!workflowEvents.isEmpty()) {
+                    System.out.println(cliPrinter.prettyPrintOnSeparateLines(workflowEvents));
                 }
 
+                toolState.ignoredRunIds().addAll(runIdsToIgnore);
                 // We don't need to keep tracking the runs that are not in newState, since they must have completed
-                currentState = newState;
-                toolRanBefore = true;
+                toolStates.put(parsedArgs.repository(), new ToolState(newState, toolState.ignoredRunIds()));
             }
-        } catch (Exception e) {
+        } catch (APIException | CLIException e) {
             System.err.println(e.getMessage());
             System.exit(1);
         }

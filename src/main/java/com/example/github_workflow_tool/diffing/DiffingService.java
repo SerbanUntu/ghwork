@@ -94,6 +94,8 @@ public class DiffingService {
         WorkflowRunStatus statusBefore = getWorkflowRunStatus(runBefore);
         WorkflowRunStatus statusAfter = getWorkflowRunStatus(runAfter);
 
+        if (statusBefore == WorkflowRunStatus.AFTER_QUEUEING) return events;
+
         if (statusAfter.getOrder() > statusBefore.getOrder()) {
             events.add(new WorkflowQueuedEvent(
                     runAfter.startedAt(),
@@ -111,6 +113,8 @@ public class DiffingService {
         List<Event> events = new ArrayList<>();
         JobStatus statusBefore = getJobStatus(jobBefore);
         JobStatus statusAfter = getJobStatus(jobAfter);
+
+        if (statusBefore == JobStatus.COMPLETED) return events;
 
         if (statusAfter.getOrder() >= JobStatus.IN_PROGRESS.getOrder() &&
                 statusBefore == JobStatus.INITIAL) {
@@ -143,6 +147,8 @@ public class DiffingService {
         List<Event> events = new ArrayList<>();
         StepStatus statusBefore = getStepStatus(stepBefore);
         StepStatus statusAfter = getStepStatus(stepAfter);
+
+        if (statusBefore == StepStatus.SUCCEEDED || statusBefore == StepStatus.FAILED) return events;
 
         if (statusAfter.getOrder() >= StepStatus.IN_PROGRESS.getOrder() &&
                 statusBefore == StepStatus.INITIAL) {

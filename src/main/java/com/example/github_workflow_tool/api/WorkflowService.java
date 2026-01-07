@@ -5,6 +5,7 @@ import com.example.github_workflow_tool.cli.exceptions.CLIException;
 import com.example.github_workflow_tool.domain.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Abstraction around multiple API calls. Exposes a method to map workflow data to respective job data.
@@ -46,10 +47,14 @@ public class WorkflowService {
      * @throws APIException If a network fault occurs.
      * @throws CLIException If the repository name or access token provided by the user are invalid.
      */
-    public Map<Long, WorkflowRunData> queryApi() throws APIException, CLIException {
+    public Map<Long, WorkflowRunData> getCurrentRuns(Set<Long> ignoredRuns) throws APIException, CLIException {
         WorkflowResponse workflowResponse = this.workflowClient.fetchData();
         List<Long> runIds = workflowResponse.workflowRuns().stream().map(WorkflowRun::id).toList();
-        List<JobResponse> jobResponses = this.jobClient.fetchData(runIds);
+        List<JobResponse> jobResponses = this.jobClient.fetchData(runIds
+                .stream()
+                .filter(id -> !ignoredRuns.contains(id))
+                .toList()
+        );
         return mapJobsToWorkflows(workflowResponse.workflowRuns(), jobResponses);
     }
 
@@ -62,5 +67,27 @@ public class WorkflowService {
         List<JobResponse> jobResponses = this.jobClient.fetchData(runIds);
         result.putAll(mapJobsToWorkflows(additionalRuns, jobResponses));
         return result;
+    }
+
+    public Set<Long> getRunsIdsToIgnore(Map<Long, WorkflowRunData> runsState) {
+        return runsState.values()
+                .stream()
+                .map(WorkflowRunData::run)
+                .filter(run -> run.conclusion() != null)
+                .map(WorkflowRun::id)
+                .collect(Collectors.toSet());
+    }
+
+    public List<WorkflowRun> getRunsSetDifference(
+            Map<Long, WorkflowRunData> first,
+            Map<Long, WorkflowRunData> second,
+            Set<Long> ignoredRunIds
+    ) {
+        return first
+                .values()
+                .stream()
+                .map(WorkflowRunData::run)
+                .filter(run -> !second.containsKey(run.id()) && ignoredRunIds.contains(run.id()))
+                .toList();
     }
 }

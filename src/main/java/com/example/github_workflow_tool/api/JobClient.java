@@ -44,6 +44,7 @@ public class JobClient extends GithubClient {
      * @throws CLIException If the repository name or access token provided by the user are invalid.
      */
     public List<JobResponse> fetchData(List<Long> runIds) throws APIException, CLIException {
+        if (runIds == null || runIds.isEmpty()) return new ArrayList<>();
         List<URI> uris = runIds.stream().map(runId -> {
             try {
                 return new URI(baseRoute + getRoute(runId));
@@ -54,7 +55,12 @@ public class JobClient extends GithubClient {
 
         List<CompletableFuture<HttpResponse<String>>> futures = uris
                 .stream()
-                .map(uri -> HttpRequest.newBuilder().uri(uri).headers(headers).build())
+                .map(uri -> {
+                    if (envService.isDebugPrintingEnabled()) {
+                        System.out.println("GET request: " + uri);
+                    }
+                    return HttpRequest.newBuilder().uri(uri).headers(headers).build();
+                })
                 .map(request -> CompletableFuture.supplyAsync(() -> getResponse(request)).exceptionally(e -> {
                     throw new APIException(e.getMessage());
                 }))
