@@ -82,6 +82,8 @@ public class DiffingService {
         if (step == null) return StepStatus.INITIAL;
         if (step.status().equals("queued")) return StepStatus.INITIAL;
         if (step.status().equals("in_progress")) return StepStatus.IN_PROGRESS;
+        if (step.conclusion() == null) return StepStatus.INITIAL;
+
         return switch (step.conclusion()) {
             case "success" -> StepStatus.SUCCEEDED;
             case "failure" -> StepStatus.FAILED;

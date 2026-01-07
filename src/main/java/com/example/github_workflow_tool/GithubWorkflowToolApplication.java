@@ -5,6 +5,7 @@ import com.example.github_workflow_tool.api.exceptions.APIException;
 import com.example.github_workflow_tool.cli.ArgumentParser;
 import com.example.github_workflow_tool.cli.CLIArguments;
 import com.example.github_workflow_tool.cli.CLIPrinter;
+import com.example.github_workflow_tool.cli.StorageService;
 import com.example.github_workflow_tool.cli.exceptions.CLIException;
 import com.example.github_workflow_tool.diffing.DiffingService;
 import com.example.github_workflow_tool.domain.Repository;
@@ -32,8 +33,6 @@ public class GithubWorkflowToolApplication {
      */
     public static void main(String[] args) {
 
-        Map<Repository, ToolState> toolStates = new HashMap<>(); // TODO get from storage
-
         try {
             CLIArguments parsedArgs = (new ArgumentParser()).parse(args);
             WorkflowService workflowService = new WorkflowService(
@@ -41,9 +40,11 @@ public class GithubWorkflowToolApplication {
                     parsedArgs.accessToken()
             );
             DiffingService diffingService = new DiffingService();
-            Instant lastApiCallTimestamp = null;
+            StorageService storageService = new StorageService();
             CLIPrinter cliPrinter = new CLIPrinter();
 
+            Map<Repository, ToolState> toolStates = storageService.retrieve();
+            Instant lastApiCallTimestamp = null;
             boolean toolRanBefore = true;
             if (!toolStates.containsKey(parsedArgs.repository())) {
                 toolRanBefore = false;
@@ -90,6 +91,7 @@ public class GithubWorkflowToolApplication {
                 toolState.ignoredRunIds().addAll(runIdsToIgnore);
                 // We don't need to keep tracking the runs that are not in newState, since they must have completed
                 toolStates.put(parsedArgs.repository(), new ToolState(newState, toolState.ignoredRunIds()));
+                storageService.save(toolStates);
             }
         } catch (APIException | CLIException e) {
             System.err.println(e.getMessage());

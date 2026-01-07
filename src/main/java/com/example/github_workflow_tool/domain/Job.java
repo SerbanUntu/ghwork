@@ -1,5 +1,6 @@
 package com.example.github_workflow_tool.domain;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.*;
 
@@ -16,5 +17,5 @@ public record Job(
         Instant startedAt,
         Instant completedAt,
         List<JobStep> steps
-) {
+) implements Serializable {
 }

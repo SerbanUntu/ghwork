@@ -20,4 +20,8 @@ public class EnvService {
     public boolean isDebugPrintingEnabled() {
         return Objects.equals(this.properties.getProperty("debug"), "true");
     }
+
+    public String getAppName() {
+        return this.properties.getProperty("name");
+    }
 }
