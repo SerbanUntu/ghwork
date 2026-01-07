@@ -5,6 +5,9 @@ package com.example.github_workflow_tool.cli.exceptions;
  */
 public abstract class CLIException extends RuntimeException {
 
+    /**
+     * Informs the user how to run the application in the terminal
+     */
     private static final String usageString = "Usage: ghwork <owner>/<repo> <access token>";
 
     public CLIException(String message) {

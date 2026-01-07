@@ -1,6 +1,7 @@
 package com.example.github_workflow_tool.api;
 
 import com.example.github_workflow_tool.api.exceptions.APIException;
+import com.example.github_workflow_tool.cli.EnvService;
 import com.example.github_workflow_tool.cli.exceptions.GenericClientError;
 import com.example.github_workflow_tool.api.exceptions.ServerError;
 import com.example.github_workflow_tool.cli.exceptions.CLIException;
@@ -23,6 +24,7 @@ public abstract class GithubClient {
 
     protected final Repository repository;
     protected final HttpClient client;
+    protected final EnvService envService;
 
     /**
      * The route shared by all requests. Contains the base URL, the owner, and the repository name.
@@ -85,6 +87,7 @@ public abstract class GithubClient {
         this.repository = repository;
         this.client = HttpClient.newHttpClient();
         this.baseRoute = "https://api.github.com/repos/" + repository.getOwner() + "/" + repository.getRepository();
+        this.envService = new EnvService();
         this.headers = new String[]{"X-GitHub-Api-Version", API_VERSION, "Authorization", "Bearer " + token.token()};
     }
 }
