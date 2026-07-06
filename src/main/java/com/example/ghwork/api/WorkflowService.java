@@ -125,7 +125,7 @@ public class WorkflowService {
      * @param first         The first set of runs, indexed by id and containing jobs.
      * @param second        The second set of runs, indexed by id and containing jobs.
      * @param ignoredRunIds The runs to not be added in the resulting list,
-     *                      even if they are present in the first set.j
+     *                      even if they are present in the first set.
      * @return The set difference of the two sets of runs.
      */
     public List<WorkflowRun> getRunsSetDifference(
