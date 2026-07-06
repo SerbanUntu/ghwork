@@ -3,7 +3,7 @@ plugins {
 	checkstyle
 }
 
-group = "com.ghwork"
+group = "com.example"
 version = "0.1.0"
 description = "Queries the GitHub workflows of a repository and displays live information."
 

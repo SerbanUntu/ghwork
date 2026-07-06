@@ -30,14 +30,17 @@ jobs:
 
       - name: Extract Project Version
         id: get_version
+        if: github.ref == 'refs/heads/main'
         run: |
           VERSION=$(./gradlew properties -q | grep "^version:" | awk '{print $2}')
           echo "PROJECT_VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Create Portable Distribution
+        if: github.ref == 'refs/heads/main'
         run: ./gradlew installDist -x test
 
       - name: Zip Distribution
+        if: github.ref == 'refs/heads/main'
         run: |
           cd build/install
           zip -r "../../ghwork-${{ env.PROJECT_VERSION }}.zip" ghwork
