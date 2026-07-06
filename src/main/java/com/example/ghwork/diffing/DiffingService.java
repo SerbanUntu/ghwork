@@ -1,12 +1,22 @@
 package com.example.ghwork.diffing;
 
-import com.example.ghwork.domain.JobStep;
-import com.example.ghwork.domain.WorkflowRunData;
-import com.example.ghwork.domain.events.*;
 import com.example.ghwork.domain.Job;
+import com.example.ghwork.domain.JobStep;
 import com.example.ghwork.domain.WorkflowRun;
-
-import java.util.*;
+import com.example.ghwork.domain.WorkflowRunData;
+import com.example.ghwork.domain.events.Event;
+import com.example.ghwork.domain.events.JobFinishedEvent;
+import com.example.ghwork.domain.events.JobStartedEvent;
+import com.example.ghwork.domain.events.StepFailedEvent;
+import com.example.ghwork.domain.events.StepStartedEvent;
+import com.example.ghwork.domain.events.StepSucceededEvent;
+import com.example.ghwork.domain.events.WorkflowQueuedEvent;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Maps the difference in states of the workflow runs to events that happened between those states.
@@ -16,17 +26,18 @@ public class DiffingService {
 
     /**
      * Returns a list of all the domain events that needed to happen
-     * to obtain the `afterState` from the `beforeState`
+     * to obtain the `afterState` from the `beforeState`.
      *
      * @param beforeState The mapping of workflow runs to job runs in the current saved state.
      * @param afterState  The mapping of workflow runs to job runs at some time
      *                    after the before state, coming from fresh API data.
      *                    Must include all keys that are included in the before state.
-     * @return The list of domain events that occurred between the two states, sorted by increasing timestamp.
+     * @return The list of domain events that occurred between the two states,
+     *     sorted by increasing timestamp.
      */
     public List<Event> computeDiff(
-            Map<Long, WorkflowRunData> beforeState,
-            Map<Long, WorkflowRunData> afterState
+        Map<Long, WorkflowRunData> beforeState,
+        Map<Long, WorkflowRunData> afterState
     ) {
         List<Event> events = new ArrayList<>();
 
@@ -40,7 +51,9 @@ public class DiffingService {
             events.addAll(compareWorkflowRuns(runBefore, runAfter));
 
             Map<Long, Job> jobsAfter = runDataAfter.jobs();
-            Map<Long, Job> jobsBefore = runBefore == null ? (new HashMap<>()) : beforeState.get(runId).jobs();
+            Map<Long, Job> jobsBefore = runBefore == null
+                ? (new HashMap<>())
+                : beforeState.get(runId).jobs();
 
             Set<Long> jobIdsBefore = jobsBefore.keySet();
             for (Map.Entry<Long, Job> jobEntryAfter : jobsAfter.entrySet()) {
@@ -53,8 +66,8 @@ public class DiffingService {
                 for (int i = 0; i < jobAfter.steps().size(); i++) {
                     JobStep stepAfter = jobAfter.steps().get(i);
                     JobStep stepBefore = (jobBefore == null || jobBefore.steps().size() <= i)
-                            ? null
-                            : jobBefore.steps().get(i);
+                        ? null
+                        : jobBefore.steps().get(i);
                     events.addAll(compareSteps(runAfter, jobAfter, stepBefore, stepAfter));
                 }
             }
@@ -65,12 +78,16 @@ public class DiffingService {
     }
 
     /**
-     * Maps the API state in the `status` and `conclusion` fields to a domain status used for ordering
+     * Maps the API state in the `status` and `conclusion` fields
+     * to a domain status used for ordering.
+     *
      * @param workflowRun The run containing the fields from the API
      * @return The domain status used for ordering
      */
     private WorkflowRunStatus getWorkflowRunStatus(WorkflowRun workflowRun) {
-        if (workflowRun == null) return WorkflowRunStatus.INITIAL;
+        if (workflowRun == null) {
+            return WorkflowRunStatus.INITIAL;
+        }
         return switch (workflowRun.status()) {
             case "waiting", "requested" -> WorkflowRunStatus.INITIAL;
             default -> WorkflowRunStatus.AFTER_QUEUEING;
@@ -78,27 +95,45 @@ public class DiffingService {
     }
 
     /**
-     * Maps the API state in the `status` and `conclusion` fields to a domain status used for ordering
+     * Maps the API state in the `status` and `conclusion` fields to a domain status
+     * used for ordering.
+     *
      * @param job The job containing the fields from the API
      * @return The domain status used for ordering
      */
     private JobStatus getJobStatus(Job job) {
-        if (job == null) return JobStatus.INITIAL;
-        if (job.status().equals("in_progress")) return JobStatus.IN_PROGRESS;
-        if (job.status().equals("completed")) return JobStatus.COMPLETED;
+        if (job == null) {
+            return JobStatus.INITIAL;
+        }
+        if (job.status().equals("in_progress")) {
+            return JobStatus.IN_PROGRESS;
+        }
+        if (job.status().equals("completed")) {
+            return JobStatus.COMPLETED;
+        }
         return JobStatus.INITIAL;
     }
 
     /**
-     * Maps the API state in the `status` and `conclusion` fields to a domain status used for ordering
+     * Maps the API state in the `status` and `conclusion` fields to a domain status
+     * used for ordering.
+     *
      * @param step The job step containing the fields from the API
      * @return The domain status used for ordering
      */
     private StepStatus getStepStatus(JobStep step) {
-        if (step == null) return StepStatus.INITIAL;
-        if (step.status().equals("queued")) return StepStatus.INITIAL;
-        if (step.status().equals("in_progress")) return StepStatus.IN_PROGRESS;
-        if (step.conclusion() == null) return StepStatus.INITIAL;
+        if (step == null) {
+            return StepStatus.INITIAL;
+        }
+        if (step.status().equals("queued")) {
+            return StepStatus.INITIAL;
+        }
+        if (step.status().equals("in_progress")) {
+            return StepStatus.IN_PROGRESS;
+        }
+        if (step.conclusion() == null) {
+            return StepStatus.INITIAL;
+        }
 
         return switch (step.conclusion()) {
             case "success" -> StepStatus.SUCCEEDED;
@@ -108,10 +143,11 @@ public class DiffingService {
     }
 
     /**
-     * Diffs two run states to determine a list of events that happened to obtain the new state from the old state.
+     * Diffs two run states to determine a list of events that happened
+     * to obtain the new state from the old state.
      *
      * @param runBefore The previous run state
-     * @param runAfter The new run state
+     * @param runAfter  The new run state
      * @return A list of events that occurred to obtain the new state from the old state.
      */
     private List<Event> compareWorkflowRuns(WorkflowRun runBefore, WorkflowRun runAfter) {
@@ -119,15 +155,17 @@ public class DiffingService {
         WorkflowRunStatus statusBefore = getWorkflowRunStatus(runBefore);
         WorkflowRunStatus statusAfter = getWorkflowRunStatus(runAfter);
 
-        if (statusBefore == WorkflowRunStatus.AFTER_QUEUEING) return events;
+        if (statusBefore == WorkflowRunStatus.AFTER_QUEUEING) {
+            return events;
+        }
 
         if (statusAfter.getOrder() > statusBefore.getOrder()) {
             events.add(new WorkflowQueuedEvent(
-                    runAfter.startedAt(),
-                    runAfter.headBranch(),
-                    runAfter.headSha(),
-                    runAfter.id(),
-                    runAfter.name()
+                runAfter.startedAt(),
+                runAfter.headBranch(),
+                runAfter.headSha(),
+                runAfter.id(),
+                runAfter.name()
             ));
         }
 
@@ -135,11 +173,12 @@ public class DiffingService {
     }
 
     /**
-     * Diffs two job states to determine a list of events that happened to obtain the new state from the old state.
+     * Diffs two job states to determine a list of events that happened
+     * to obtain the new state from the old state.
      *
-     * @param run The run that the job is a part of
+     * @param run       The run that the job is a part of
      * @param jobBefore The previous job state
-     * @param jobAfter The new job state
+     * @param jobAfter  The new job state
      * @return A list of events that occurred to obtain the new state from the old state.
      */
     private List<Event> compareJobs(WorkflowRun run, Job jobBefore, Job jobAfter) {
@@ -147,31 +186,33 @@ public class DiffingService {
         JobStatus statusBefore = getJobStatus(jobBefore);
         JobStatus statusAfter = getJobStatus(jobAfter);
 
-        if (statusBefore == JobStatus.COMPLETED) return events;
+        if (statusBefore == JobStatus.COMPLETED) {
+            return events;
+        }
 
-        if (statusAfter.getOrder() >= JobStatus.IN_PROGRESS.getOrder() &&
-                statusBefore == JobStatus.INITIAL) {
+        if (statusAfter.getOrder() >= JobStatus.IN_PROGRESS.getOrder()
+            && statusBefore == JobStatus.INITIAL) {
             events.add(new JobStartedEvent(
-                    jobAfter.startedAt(),
-                    run.headBranch(),
-                    jobAfter.headSha(),
-                    run.id(),
-                    jobAfter.id(),
-                    jobAfter.name(),
-                    run.name()
+                jobAfter.startedAt(),
+                run.headBranch(),
+                jobAfter.headSha(),
+                run.id(),
+                jobAfter.id(),
+                jobAfter.name(),
+                run.name()
             ));
         }
 
-        if (statusBefore.getOrder() <= JobStatus.IN_PROGRESS.getOrder() &&
-                statusAfter == JobStatus.COMPLETED) {
+        if (statusBefore.getOrder() <= JobStatus.IN_PROGRESS.getOrder()
+            && statusAfter == JobStatus.COMPLETED) {
             events.add(new JobFinishedEvent(
-                    jobAfter.completedAt(),
-                    run.headBranch(),
-                    jobAfter.headSha(),
-                    run.id(),
-                    jobAfter.id(),
-                    jobAfter.name(),
-                    run.name()
+                jobAfter.completedAt(),
+                run.headBranch(),
+                jobAfter.headSha(),
+                run.id(),
+                jobAfter.id(),
+                jobAfter.name(),
+                run.name()
             ));
         }
 
@@ -179,60 +220,68 @@ public class DiffingService {
     }
 
     /**
-     * Diffs two job step states to determine a list of events that happened to obtain the new state from the old state.
+     * Diffs two job step states to determine a list of events that happened
+     * to obtain the new state from the old state.
      *
-     * @param run The run that the step is a part of
-     * @param job The job that the step is a part of
+     * @param run        The run that the step is a part of
+     * @param job        The job that the step is a part of
      * @param stepBefore The previous job step state
-     * @param stepAfter The new job step state
+     * @param stepAfter  The new job step state
      * @return A list of events that occurred to obtain the new state from the old state.
      */
-    private List<Event> compareSteps(WorkflowRun run, Job job, JobStep stepBefore, JobStep stepAfter) {
+    private List<Event> compareSteps(
+        WorkflowRun run,
+        Job job,
+        JobStep stepBefore,
+        JobStep stepAfter
+    ) {
         List<Event> events = new ArrayList<>();
         StepStatus statusBefore = getStepStatus(stepBefore);
         StepStatus statusAfter = getStepStatus(stepAfter);
 
-        if (statusBefore == StepStatus.SUCCEEDED || statusBefore == StepStatus.FAILED) return events;
+        if (statusBefore == StepStatus.SUCCEEDED || statusBefore == StepStatus.FAILED) {
+            return events;
+        }
 
-        if (statusAfter.getOrder() >= StepStatus.IN_PROGRESS.getOrder() &&
-                statusBefore == StepStatus.INITIAL) {
+        if (statusAfter.getOrder() >= StepStatus.IN_PROGRESS.getOrder()
+            && statusBefore == StepStatus.INITIAL) {
             events.add(new StepStartedEvent(
-                    stepAfter.startedAt(),
-                    run.headBranch(),
-                    run.headSha(),
-                    run.id(),
-                    job.id(),
-                    stepAfter.name(),
-                    stepAfter.number(),
-                    job.name()
+                stepAfter.startedAt(),
+                run.headBranch(),
+                run.headSha(),
+                run.id(),
+                job.id(),
+                stepAfter.name(),
+                stepAfter.number(),
+                job.name()
             ));
         }
 
-        if (statusBefore.getOrder() <= StepStatus.IN_PROGRESS.getOrder() &&
-                statusAfter == StepStatus.FAILED) {
+        if (statusBefore.getOrder() <= StepStatus.IN_PROGRESS.getOrder()
+            && statusAfter == StepStatus.FAILED) {
             events.add(new StepFailedEvent(
-                    stepAfter.completedAt(),
-                    run.headBranch(),
-                    run.headSha(),
-                    run.id(),
-                    job.id(),
-                    stepAfter.name(),
-                    stepAfter.number(),
-                    job.name()
+                stepAfter.completedAt(),
+                run.headBranch(),
+                run.headSha(),
+                run.id(),
+                job.id(),
+                stepAfter.name(),
+                stepAfter.number(),
+                job.name()
             ));
         }
 
-        if (statusBefore.getOrder() <= StepStatus.IN_PROGRESS.getOrder() &&
-                statusAfter == StepStatus.SUCCEEDED) {
+        if (statusBefore.getOrder() <= StepStatus.IN_PROGRESS.getOrder()
+            && statusAfter == StepStatus.SUCCEEDED) {
             events.add(new StepSucceededEvent(
-                    stepAfter.completedAt(),
-                    run.headBranch(),
-                    run.headSha(),
-                    run.id(),
-                    job.id(),
-                    stepAfter.name(),
-                    stepAfter.number(),
-                    job.name()
+                stepAfter.completedAt(),
+                run.headBranch(),
+                run.headSha(),
+                run.id(),
+                job.id(),
+                stepAfter.name(),
+                stepAfter.number(),
+                job.name()
             ));
         }
 

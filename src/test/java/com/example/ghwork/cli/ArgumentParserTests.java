@@ -31,7 +31,7 @@ public class ArgumentParserTests {
     @Test
     public void parseTwoArgumentsCorrectlyTest() {
         String[] args = {"owner/repo", "accessToken"};
-        CLIArguments expected = new CLIArguments(
+        CliArguments expected = new CliArguments(
                 new Repository("owner/repo"),
                 new AccessToken("accessToken")
         );

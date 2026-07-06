@@ -1,14 +1,14 @@
 package com.example.ghwork.api;
 
 import com.example.ghwork.domain.Job;
-
-import java.util.*;
+import java.util.List;
 
 /**
- * The data object containing needed data from the API response from the "List jobs for a workflow run" route
+ * The data object containing needed data from the API response
+ * from the "List jobs for a workflow run" route.
  */
 public record JobResponse(
-        int totalCount,
-        List<Job> jobs
+    int totalCount,
+    List<Job> jobs
 ) {
 }
