@@ -1,11 +1,12 @@
 package com.example.ghwork.domain.events;
 
-import com.example.ghwork.cli.CLIPrinter;
+import static org.fusesource.jansi.Ansi.Color;
+import static org.fusesource.jansi.Ansi.ansi;
 
-import static org.fusesource.jansi.Ansi.*;
-
+import com.example.ghwork.cli.CliPrinter;
 import java.time.Instant;
-import java.util.*;
+import java.util.Objects;
+import java.util.OptionalLong;
 
 /**
  * A generic event concerning a GitHub workflow that is of interest to the user.
@@ -16,8 +17,16 @@ public abstract class Event implements Comparable<Event> {
     private final String branchName;
     private final String commitSha;
     private final long runId;
-    private final CLIPrinter printer = new CLIPrinter();
+    private final CliPrinter printer = new CliPrinter();
 
+    /**
+     * Constructor for a generic event concerning a GitHub workflow that is of interest to the user.
+     *
+     * @param timestamp  When the event occurred.
+     * @param branchName The git branch relevant to the event.
+     * @param commitSha  The commit SHA relevant to the event.
+     * @param runId      The ID of the Actions run.
+     */
     public Event(Instant timestamp, String branchName, String commitSha, long runId) {
         this.timestamp = timestamp;
         this.branchName = branchName;
@@ -27,7 +36,7 @@ public abstract class Event implements Comparable<Event> {
 
     /**
      * Returns the result of a multi-condition comparison, where the
-     * comparison results are in decreasing importance
+     * comparison results are in decreasing importance.
      *
      * @param comparisons A list of results of {@code compareTo()} functions
      * @return The comparison result
@@ -42,37 +51,42 @@ public abstract class Event implements Comparable<Event> {
     }
 
     /**
-     * Compares two long properties of events that may or may not have a value
+     * Compares two long properties of events that may or may not have a value.
      *
      * @param a The first optional property
      * @param b The second optional property
      * @return Zero (equality) if one of the long values is missing, otherwise their difference
      */
     private int compareOptionalLongs(OptionalLong a, OptionalLong b) {
-        if (a.isEmpty() || b.isEmpty()) return 0;
+        if (a.isEmpty() || b.isEmpty()) {
+            return 0;
+        }
         return (int) (a.getAsLong() - b.getAsLong());
     }
 
     @Override
     public int compareTo(Event other) {
         return getFirstNonZeroComparison(
-                this.timestamp.compareTo(other.timestamp),
-                (int) (this.runId - other.runId),
-                compareOptionalLongs(this.getJobIdForComparison(), other.getJobIdForComparison()),
-                compareOptionalLongs(this.getStepNumberForComparison(), other.getStepNumberForComparison()),
-                this.getOrder() - other.getOrder()
+            this.timestamp.compareTo(other.timestamp),
+            (int) (this.runId - other.runId),
+            compareOptionalLongs(this.getJobIdForComparison(), other.getJobIdForComparison()),
+            compareOptionalLongs(
+                this.getStepNumberForComparison(),
+                other.getStepNumberForComparison()
+            ),
+            this.getOrder() - other.getOrder()
         );
     }
 
     /**
-     * Returns the job id of an event if it has one
+     * Returns the job id of an event if it has one.
      *
      * @return The job id of an event, wrapped in an {@link OptionalLong}
      */
     protected abstract OptionalLong getJobIdForComparison();
 
     /**
-     * Returns the step number of an event if it has one
+     * Returns the step number of an event if it has one.
      *
      * @return The step number of an event, wrapped in an {@link OptionalLong}
      */
@@ -81,21 +95,22 @@ public abstract class Event implements Comparable<Event> {
     /**
      * Used for determining which event to print first,
      * when there are multiple events that happened at the same instant.
-     * An event with a lower order is printed before an event with a higher order with the same timestamp.
+     * An event with a lower order is printed before an event with a higher order
+     * with the same timestamp.
      *
      * @return The order of the event.
      */
     protected abstract int getOrder();
 
     /**
-     * Getter for the ANSI color for this event tag
+     * Getter for the ANSI color for this event tag.
      *
      * @return The ANSI color for this event tag
      */
     protected abstract Color getColor();
 
     /**
-     * Getter for the text of the event tag
+     * Getter for the text of the event tag.
      *
      * @return The text of the event tag for this event
      */
@@ -118,7 +133,8 @@ public abstract class Event implements Comparable<Event> {
     protected abstract int getEventTagIndentation();
 
     /**
-     * Returns an ANSI string in the following format, shared by all events: {@code timestamp Run xxx$ TAG}
+     * Returns an ANSI string in the following format, shared by all events:
+     * {@code timestamp Run xxx$ TAG}.
      * The "$" indicates that the digits are the last 3 digits of the full ID.
      * The run IDs are color coded, with a random color corresponding to each (full) ID.
      * The tag is an indicator such as "STARTED" or "SUCCEEDED".
@@ -127,16 +143,16 @@ public abstract class Event implements Comparable<Event> {
      */
     protected String getEventPrefix() {
         return ansi()
-                .a(this.getPrinter().formatTimestamp(this.getTimestamp()))
-                .a(' ')
-                .a(this.getPrinter().formatRunId(this.getRunId()))
-                .a(' ')
-                .a(this.getPrinter().getRepeatedString(" ", this.getEventTagIndentation()))
-                .fg(this.getColor())
-                .a(this.getPrinter().formatTag(this.getEventTag(), this.getEventTagLength()))
-                .fgDefault()
-                .reset()
-                .toString();
+            .a(this.getPrinter().formatTimestamp(this.getTimestamp()))
+            .a(' ')
+            .a(this.getPrinter().formatRunId(this.getRunId()))
+            .a(' ')
+            .a(this.getPrinter().getRepeatedString(" ", this.getEventTagIndentation()))
+            .fg(this.getColor())
+            .a(this.getPrinter().formatTag(this.getEventTag(), this.getEventTagLength()))
+            .fgDefault()
+            .reset()
+            .toString();
     }
 
     /**
@@ -147,11 +163,11 @@ public abstract class Event implements Comparable<Event> {
      * @return The input string with the branch and commit appended
      */
     protected String appendBranchAndCommitSha(String eventDataAnsiString) {
-        return eventDataAnsiString +
-                this.getPrinter().getPaddingBeforeBranch(eventDataAnsiString, this.getBranchName()) +
-                this.getPrinter().formatName(this.getBranchName()) +
-                '@' +
-                this.getPrinter().formatCommitSha(this.getCommitSha());
+        return eventDataAnsiString
+            + this.getPrinter().getPaddingBeforeBranch(eventDataAnsiString, this.getBranchName())
+            + this.getPrinter().formatName(this.getBranchName())
+            + '@'
+            + this.getPrinter().formatCommitSha(this.getCommitSha());
     }
 
     public Instant getTimestamp() {
@@ -170,12 +186,12 @@ public abstract class Event implements Comparable<Event> {
         return this.runId;
     }
 
-    public CLIPrinter getPrinter() {
+    public CliPrinter getPrinter() {
         return this.printer;
     }
 
     /**
-     * Used for printing a human-friendly colored string to the terminal, using ANSI codes
+     * Used for printing a human-friendly colored string to the terminal, using ANSI codes.
      *
      * @return A human-friendly colored string representing the event data
      */
@@ -183,9 +199,14 @@ public abstract class Event implements Comparable<Event> {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         Event event = (Event) o;
-        return runId == event.runId && Objects.equals(timestamp, event.timestamp) && Objects.equals(branchName, event.branchName) && Objects.equals(commitSha, event.commitSha);
+        return runId == event.runId
+            && Objects.equals(timestamp, event.timestamp)
+            && Objects.equals(branchName, event.branchName)
+            && Objects.equals(commitSha, event.commitSha);
     }
 
     @Override

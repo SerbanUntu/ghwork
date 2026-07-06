@@ -1,7 +1,7 @@
 package com.example.ghwork.diffing;
 
 /**
- * Maps a workflow run state to a discrete point in time, to aid comparison
+ * Maps a workflow run state to a discrete point in time, to aid comparison.
  */
 public enum WorkflowRunStatus {
     INITIAL(0),
