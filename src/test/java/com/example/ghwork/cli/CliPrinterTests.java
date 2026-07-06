@@ -7,9 +7,9 @@ import org.junit.jupiter.params.provider.CsvSource;
 import static org.fusesource.jansi.Ansi.ansi;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class CLIPrinterTests {
+public class CliPrinterTests {
 
-    private final CLIPrinter sut = new CLIPrinter();
+    private final CliPrinter sut = new CliPrinter();
 
     @Test
     public void formatTagNonEmptyTest() {

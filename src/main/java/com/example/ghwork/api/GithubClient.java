@@ -1,15 +1,14 @@
 package com.example.ghwork.api;
 
-import com.example.ghwork.api.exceptions.APIException;
-import com.example.ghwork.cli.EnvService;
-import com.example.ghwork.cli.exceptions.GenericClientError;
+import com.example.ghwork.api.exceptions.ApiException;
 import com.example.ghwork.api.exceptions.ServerError;
-import com.example.ghwork.cli.exceptions.CLIException;
+import com.example.ghwork.cli.EnvService;
+import com.example.ghwork.cli.exceptions.CliException;
+import com.example.ghwork.cli.exceptions.GenericClientError;
 import com.example.ghwork.cli.exceptions.InexistentRepositoryException;
 import com.example.ghwork.cli.exceptions.InvalidAccessTokenException;
 import com.example.ghwork.domain.AccessToken;
 import com.example.ghwork.domain.Repository;
-
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -32,46 +31,55 @@ public abstract class GithubClient {
     protected final String baseRoute;
 
     /**
-     * The headers needed when sending requests to the GitHub API, in the form: header, value, header, value.
+     * The headers needed when sending requests to the GitHub API, in the form:
+     * header, value, header, value.
      */
     protected final String[] headers;
 
     /**
-     * Throws a CLI exception if the API returns a 4xx status code due to incorrect parameters passed to the CLI.
+     * Throws a CLI exception if the API returns a 4xx status code due to
+     * incorrect parameters passed to the CLI.
      *
      * @param response The HTTP Response object.
-     * @throws CLIException If the repository is not found or the access token is invalid.
+     * @throws CliException If the repository is not found or the access token is invalid.
      */
-    private void checkResponse(HttpResponse<String> response) throws APIException, CLIException {
+    private void checkResponse(HttpResponse<String> response) throws ApiException, CliException {
         int code = response.statusCode();
         switch (code) {
             case 401:
                 throw new InvalidAccessTokenException();
             case 404:
                 throw new InexistentRepositoryException(repository);
+            default:
+                break;
         }
-        if (code >= 400 && code <= 499) throw new GenericClientError(code);
-        if (code >= 500 && code <= 599) throw new ServerError(code);
+        if (code >= 400 && code <= 499) {
+            throw new GenericClientError(code);
+        }
+        if (code >= 500 && code <= 599) {
+            throw new ServerError(code);
+        }
     }
 
     /**
-     * Wrapper around a normal `client.send` call that turns technical errors into user-facing errors
-     * and check the returned status code.
+     * Wrapper around a normal `client.send` call that turns technical errors
+     * into user-facing errors and check the returned status code.
      *
      * @param request The request object to send to the GitHub API.
      * @return A valid response from the GitHub server.
-     * @throws APIException If a network fault occurs.
-     * @throws CLIException If the repository name or access token provided by the user are invalid.
+     * @throws ApiException If a network fault occurs.
+     * @throws CliException If the repository name or access token provided by the user are invalid.
      */
-    protected HttpResponse<String> getResponse(HttpRequest request) throws APIException, CLIException {
+    protected HttpResponse<String> getResponse(HttpRequest request)
+        throws ApiException, CliException {
         HttpResponse<String> response;
         try {
             response = client.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new APIException(e.getMessage());
+            throw new ApiException(e.getMessage());
         } catch (IOException e) {
-            throw new APIException(e.getMessage());
+            throw new ApiException(e.getMessage());
         }
         checkResponse(response);
         return response;
@@ -88,6 +96,11 @@ public abstract class GithubClient {
         this.client = HttpClient.newHttpClient();
         this.baseRoute = "https://api.github.com/repos/" + repository.getOwner() + "/" + repository.getRepository();
         this.envService = new EnvService();
-        this.headers = new String[]{"X-GitHub-Api-Version", API_VERSION, "Authorization", "Bearer " + token.token()};
+        this.headers = new String[]{
+            "X-GitHub-Api-Version",
+            API_VERSION,
+            "Authorization",
+            "Bearer " + token.token()
+        };
     }
 }

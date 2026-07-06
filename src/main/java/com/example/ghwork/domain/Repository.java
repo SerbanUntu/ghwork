@@ -1,9 +1,8 @@
 package com.example.ghwork.domain;
 
 import com.example.ghwork.cli.exceptions.InvalidRepositoryStringException;
-
 import java.io.Serializable;
-import java.util.*;
+import java.util.Objects;
 
 /**
  * Stores data about a GitHub repository owner name and repository name.
@@ -22,12 +21,17 @@ public class Repository implements Serializable {
 
     /**
      * Constructor which parses repository string into an owner and repository name.
+     *
      * @param repositoryString A string in the format "owner/repo".
      * @throws InvalidRepositoryStringException If the format is not respected.
      */
     public Repository(String repositoryString) throws InvalidRepositoryStringException {
         String[] repositoryData = repositoryString.split("/");
-        if (repositoryData.length != 2 || repositoryData[0].isBlank() || repositoryData[1].isBlank()) {
+        if (
+            repositoryData.length != 2
+                || repositoryData[0].isBlank()
+                || repositoryData[1].isBlank()
+        ) {
             throw new InvalidRepositoryStringException(repositoryString);
         }
         this.owner = repositoryData[0];
@@ -36,6 +40,7 @@ public class Repository implements Serializable {
 
     /**
      * Getter for the account name of the repository owner.
+     *
      * @return The account name of the repository owner.
      */
     public String getOwner() {
@@ -44,6 +49,7 @@ public class Repository implements Serializable {
 
     /**
      * Getter for the repository name.
+     *
      * @return The repository name.
      */
     public String getRepository() {
@@ -52,11 +58,15 @@ public class Repository implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || this.getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || this.getClass() != o.getClass()) {
+            return false;
+        }
         Repository other = (Repository) o;
-        return Objects.equals(this.owner, other.owner) &&
-                Objects.equals(this.repository, other.repository);
+        return Objects.equals(this.owner, other.owner)
+            && Objects.equals(this.repository, other.repository);
     }
 
     @Override
@@ -66,6 +76,7 @@ public class Repository implements Serializable {
 
     /**
      * Returns the repository data in the owner/repo format.
+     *
      * @return The repository data in the owner/repo format.
      */
     @Override
