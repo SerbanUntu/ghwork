@@ -6,31 +6,50 @@ import com.example.ghwork.cli.exceptions.CannotSaveDataException;
 import com.example.ghwork.cli.exceptions.StorageException;
 import com.example.ghwork.domain.Repository;
 import com.example.ghwork.domain.ToolState;
-
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.stereotype.Service;
 
 /**
  * Persists and retrieves the persisted application data. Abstracts operations with the file system.
  */
+@Service
 public class StorageService {
+
+    private static final String FILENAME = "data.ser";
+    private static final Logger LOG = LogManager.getLogger(StorageService.class);
 
     private final Path appDir;
     private final Path filePath;
-    private final EnvService envService = new EnvService();
-    private static final String FILENAME = "data.ser";
+    private final EnvService envService;
 
-    public StorageService() {
+    /**
+     * Constructor for the service handling persisted application data.
+     *
+     * @param envService The service handling environment variables.
+     */
+    public StorageService(EnvService envService) {
+        this.envService = envService;
         String os = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
         String userHome = System.getProperty("user.home");
         Path path;
 
         if (os.contains("win")) {
             String appData = System.getenv("APPDATA");
-            path = (appData != null) ? Paths.get(appData) : Paths.get(userHome, "AppData", "Roaming");
+            path = (appData != null)
+                ? Paths.get(appData)
+                : Paths.get(userHome, "AppData", "Roaming");
         } else if (os.contains("mac")) {
             path = Paths.get(userHome, "Library", "Application Support");
         } else {
@@ -43,41 +62,48 @@ public class StorageService {
     }
 
     /**
-     * Validates an object read from the {@link ObjectInputStream} before casting it to the tool state class.
+     * Validates an object read from the {@link ObjectInputStream}
+     * before casting it to the tool state class.
+     *
      * @param inputObject A plain object, directly read from the input stream.
      * @return The cast object
-     * @throws ClassCastException If the object does not respect the structure of the tool state class
+     * @throws ClassCastException If the object does not respect the structure of
+     *                            the tool state class
      */
-    private Map<Repository, ToolState> tryCastingInput(Object inputObject) throws ClassCastException {
+    private Map<Repository, ToolState> tryCastingInput(Object inputObject)
+        throws ClassCastException {
         if (inputObject instanceof Map<?, ?> objectMap) {
             boolean isValidMap = objectMap
-                    .entrySet()
-                    .stream()
-                    .allMatch(e -> e.getKey() instanceof Repository && e.getValue() instanceof ToolState);
+                .entrySet()
+                .stream()
+                .allMatch(e -> e.getKey() instanceof Repository
+                    && e.getValue() instanceof ToolState);
             if (isValidMap) {
                 @SuppressWarnings("unchecked")
                 var castedMap = (Map<Repository, ToolState>) objectMap;
                 return castedMap;
             }
         }
-        throw new ClassCastException("Read object cannot be cast into a map of repositories to tool states.");
+        throw new ClassCastException(
+            "Read object cannot be cast into a map of repositories to tool states."
+        );
     }
 
     /**
-     * Deletes the malformed storage file
+     * Deletes the malformed storage file.
      *
      * @throws StorageException If the storage file of the application cannot be deleted
      */
     private void recoverFiles() throws StorageException {
         try {
             Files.deleteIfExists(this.filePath);
-        } catch (IOException ePrime) {
+        } catch (IOException e) {
             throw new CannotDeleteStorageFileException();
         }
     }
 
     /**
-     * Retrieve the previous application state from the file system upon startup
+     * Retrieve the previous application state from the file system upon startup.
      *
      * @return The persisted application state
      * @throws StorageException If the application state could not be retrieved
@@ -103,18 +129,19 @@ public class StorageService {
                 Map<Repository, ToolState> castedInput = tryCastingInput(inputObject);
 
                 if (this.envService.isDebugPrintingEnabled()) {
-                    System.out.println("[DEBUG] Read from file: " + this.filePath);
+                    LOG.debug("Read from file: {}", this.filePath);
                 }
                 return castedInput;
             }
         } catch (ClassNotFoundException | ClassCastException | IOException e) {
+            LOG.warn("Failed to read from file: {}. Attempting to recover the data", this.filePath);
             recoverFiles();
             return new HashMap<>();
         }
     }
 
     /**
-     * Persist the application state to the file system
+     * Persist the application state to the file system.
      *
      * @param toolStateByRepo The application state to save
      * @throws StorageException If the application state could not be saved
@@ -126,7 +153,7 @@ public class StorageService {
                 objectOutputStream.flush();
 
                 if (this.envService.isDebugPrintingEnabled()) {
-                    System.out.println("[DEBUG] Saved to file: " + this.filePath);
+                    LOG.debug("Saved to file: {}", this.filePath);
                 }
             }
         } catch (IOException e) {

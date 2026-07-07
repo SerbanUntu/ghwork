@@ -1,7 +1,7 @@
 package com.example.ghwork.diffing;
 
 /**
- * Maps a job step state to a discrete point in time, to aid comparison
+ * Maps a job step state to a discrete point in time, to aid comparison.
  */
 public enum StepStatus {
     INITIAL(0),

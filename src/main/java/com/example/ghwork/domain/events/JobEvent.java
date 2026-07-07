@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.OptionalLong;
 
 /**
- * An event concerning the lifecycle of a job within a run
+ * An event concerning the lifecycle of a job within a run.
  */
 public abstract class JobEvent extends Event {
 
@@ -13,14 +13,25 @@ public abstract class JobEvent extends Event {
     private final String jobName;
     private final String workflowName;
 
+    /**
+     * Constructor for an event concerning the lifecycle of a job within a run.
+     *
+     * @param timestamp When the event occurred.
+     * @param branchName The git branch relevant to the event.
+     * @param commitSha The commit SHA relevant to the event.
+     * @param runId The ID of the Actions run.
+     * @param jobId The ID of the Actions job.
+     * @param jobName The name of the Actions job.
+     * @param workflowName The name of the Actions workflow.
+     */
     public JobEvent(
-            Instant timestamp,
-            String branchName,
-            String commitSha,
-            long runId,
-            long jobId,
-            String jobName,
-            String workflowName
+        Instant timestamp,
+        String branchName,
+        String commitSha,
+        long runId,
+        long jobId,
+        String jobName,
+        String workflowName
     ) {
         super(timestamp, branchName, commitSha, runId);
         this.jobId = jobId;
@@ -29,7 +40,7 @@ public abstract class JobEvent extends Event {
     }
 
     /**
-     * Returns the job id of an event if it has one
+     * Returns the job id of an event if it has one.
      *
      * @return The job id of an event, wrapped in an {@link OptionalLong}
      */
@@ -39,7 +50,7 @@ public abstract class JobEvent extends Event {
     }
 
     /**
-     * Returns the step number of an event if it has one
+     * Returns the step number of an event if it has one.
      *
      * @return The step number of an event, wrapped in an {@link OptionalLong}
      */
@@ -71,26 +82,31 @@ public abstract class JobEvent extends Event {
     }
 
     /**
-     * Used for printing a human-friendly colored string to the terminal, using ANSI codes
+     * Used for printing a human-friendly colored string to the terminal, using ANSI codes.
      *
      * @return A human-friendly colored string representing the event data
      */
     @Override
     public String prettyPrint() {
-        return appendBranchAndCommitSha(this.getEventPrefix() +
-                " Job " +
-                this.getPrinter().formatName(jobName) +
-                " in workflow " +
-                this.getPrinter().formatName(workflowName)
+        return appendBranchAndCommitSha(this.getEventPrefix()
+            + " Job "
+            + this.getPrinter().formatName(jobName)
+            + " in workflow "
+            + this.getPrinter().formatName(workflowName)
         );
     }
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
         JobEvent jobEvent = (JobEvent) o;
-        return Objects.equals(jobName, jobEvent.jobName) && Objects.equals(workflowName, jobEvent.workflowName);
+        return Objects.equals(jobName, jobEvent.jobName)
+            && Objects.equals(workflowName, jobEvent.workflowName);
     }
 
     @Override

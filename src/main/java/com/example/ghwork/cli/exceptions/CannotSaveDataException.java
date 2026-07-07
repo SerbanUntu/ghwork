@@ -5,7 +5,13 @@ package com.example.ghwork.cli.exceptions;
  */
 public class CannotSaveDataException extends StorageException {
 
+    /**
+     * Constructor for the {@link CannotSaveDataException} file system exception.
+     */
     public CannotSaveDataException() {
-        super("Cannot save data to the storage file. Please check permissions.\n" + LOCATION_STRING);
+        super(
+            "Cannot save data to the storage file. Please check permissions.\n"
+                + LOCATION_STRING
+        );
     }
 }
