@@ -48,6 +48,7 @@ The codebase is organized into four main packages:
 - `WorkflowClient` - Fetches all workflow run data from a repo from the `/actions/runs` endpoint
 - `JobClient` - Fetches job data from `/actions/runs/{run_id}/jobs` endpoints using parallel requests
 - `WorkflowService` - Orchestrates API calls and maps workflow runs to their associated jobs
+- `WorkflowClientFactory`, `JobClientFactory`, `WorkflowServiceFactory` - Factories that build the clients to ensure their repository and access token fields are final
 - `WorkflowResponse`, `JobResponse` - Data transfer objects for API responses
 
 **`cli`** - Command-line interface components
