@@ -2,8 +2,6 @@ package com.example.ghwork.api;
 
 import com.example.ghwork.api.exceptions.ApiException;
 import com.example.ghwork.cli.exceptions.CliException;
-import com.example.ghwork.domain.AccessToken;
-import com.example.ghwork.domain.Repository;
 import com.example.ghwork.domain.WorkflowRun;
 import com.example.ghwork.domain.WorkflowRunData;
 import java.util.HashMap;
@@ -11,13 +9,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.springframework.stereotype.Service;
 
 /**
  * Abstraction around multiple API calls.
  * Exposes a method to map workflow data to respective job data.
+ * Instantiated via {@link WorkflowServiceFactory}.
  */
-@Service
 public class WorkflowService {
 
     private final JobClient jobClient;
@@ -25,28 +22,14 @@ public class WorkflowService {
 
     /**
      * Constructor for a service managing GitHub clients for jobs and workflows.
+     * Meant to be called by {@link WorkflowServiceFactory}.
      *
      * @param jobClient      The client for fetching job data.
      * @param workflowClient The client for fetching workflow data.
      */
-    public WorkflowService(JobClient jobClient, WorkflowClient workflowClient) {
+    WorkflowService(JobClient jobClient, WorkflowClient workflowClient) {
         this.jobClient = jobClient;
         this.workflowClient = workflowClient;
-    }
-
-    /**
-     * Sets the repository to fetch data from and the necessary access token on the GitHub clients.
-     * Not meant to be called manually during regular execution.
-     * TODO: Replace with a proper factory pattern to ensure the repository stays final.
-     *
-     * @param repository The repository to fetch data from.
-     */
-    public void initialize(Repository repository, AccessToken accessToken) {
-        this.jobClient.setRepository(repository);
-        this.workflowClient.setRepository(repository);
-        this.jobClient.setAccessToken(accessToken);
-        this.workflowClient.setAccessToken(accessToken);
-        this.workflowClient.initialize();
     }
 
     /**

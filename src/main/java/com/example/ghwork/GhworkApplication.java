@@ -1,6 +1,7 @@
 package com.example.ghwork;
 
 import com.example.ghwork.api.WorkflowService;
+import com.example.ghwork.api.WorkflowServiceFactory;
 import com.example.ghwork.api.exceptions.ApiException;
 import com.example.ghwork.cli.ArgumentParser;
 import com.example.ghwork.cli.CliArguments;
@@ -44,8 +45,12 @@ public class GhworkApplication {
         try (AnnotationConfigApplicationContext context =
                  new AnnotationConfigApplicationContext(AppConfig.class)) {
             CliArguments parsedArgs = context.getBean(ArgumentParser.class).parse(args);
-            WorkflowService workflowService = context.getBean(WorkflowService.class);
-            workflowService.initialize(parsedArgs.repository(), parsedArgs.accessToken());
+            WorkflowServiceFactory workflowServiceFactory =
+                context.getBean(WorkflowServiceFactory.class);
+            WorkflowService workflowService = workflowServiceFactory.create(
+                parsedArgs.repository(),
+                parsedArgs.accessToken()
+            );
             DiffingService diffingService = context.getBean(DiffingService.class);
             StorageService storageService = context.getBean(StorageService.class);
             CliPrinter cliPrinter = context.getBean(CliPrinter.class);
