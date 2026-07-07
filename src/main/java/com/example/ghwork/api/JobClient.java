@@ -14,12 +14,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * The client responsible for making requests to the "List jobs for a workflow run" route.
  */
 public class JobClient extends GithubClient {
 
+    private static final Logger LOG = LogManager.getLogger(JobClient.class);
     private final JsonService jsonService = new JsonService();
 
     /**
@@ -67,7 +70,7 @@ public class JobClient extends GithubClient {
             .stream()
             .map(uri -> {
                 if (this.envService.isDebugPrintingEnabled()) {
-                    System.out.println("[DEBUG] GET request: " + uri);
+                    LOG.debug("GET request: {}", uri);
                 }
                 return HttpRequest.newBuilder().uri(uri).headers(headers).build();
             })

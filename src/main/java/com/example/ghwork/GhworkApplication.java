@@ -21,6 +21,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * The CLI application class. Contains the main() method which starts the application.
@@ -28,6 +30,7 @@ import java.util.Set;
 public class GhworkApplication {
 
     private static final Duration MINIMUM_REQUEST_INTERVAL = Duration.of(5000, ChronoUnit.MILLIS);
+    private static final Logger LOG = LogManager.getLogger(GhworkApplication.class);
 
     /**
      * The starting point of the application.
@@ -39,8 +42,8 @@ public class GhworkApplication {
         try {
             CliArguments parsedArgs = (new ArgumentParser()).parse(args);
             WorkflowService workflowService = new WorkflowService(
-                    parsedArgs.repository(),
-                    parsedArgs.accessToken()
+                parsedArgs.repository(),
+                parsedArgs.accessToken()
             );
             DiffingService diffingService = new DiffingService();
             StorageService storageService = new StorageService();
@@ -50,10 +53,11 @@ public class GhworkApplication {
             Instant lastApiCallTimestamp = null;
             boolean toolRanBefore = true;
             if (!toolStates.containsKey(parsedArgs.repository())) {
+                LOG.info("No data found for this repository, creating a new cache.");
                 toolRanBefore = false;
                 toolStates.put(
-                        parsedArgs.repository(),
-                        new ToolState(new HashMap<>(), new HashSet<>())
+                    parsedArgs.repository(),
+                    new ToolState(new HashMap<>(), new HashSet<>())
                 );
             }
 
@@ -62,8 +66,8 @@ public class GhworkApplication {
                 long timeToWait = 0L;
                 if (lastApiCallTimestamp != null) {
                     timeToWait = Math.max(0L, Instant.now().until(
-                            lastApiCallTimestamp.plus(MINIMUM_REQUEST_INTERVAL),
-                            ChronoUnit.MILLIS)
+                        lastApiCallTimestamp.plus(MINIMUM_REQUEST_INTERVAL),
+                        ChronoUnit.MILLIS)
                     );
                 }
                 try {
@@ -76,30 +80,30 @@ public class GhworkApplication {
                 lastApiCallTimestamp = Instant.now();
 
                 Map<Long, WorkflowRunData> newState =
-                        workflowService.getCurrentRuns(toolState.ignoredRunIds());
+                    workflowService.getCurrentRuns(toolState.ignoredRunIds());
                 Set<Long> runIdsToIgnore = workflowService.getRunsIdsToIgnore(newState);
 
                 if (!toolRanBefore) {
                     toolStates.put(
-                            parsedArgs.repository(),
-                            new ToolState(newState, runIdsToIgnore)
+                        parsedArgs.repository(),
+                        new ToolState(newState, runIdsToIgnore)
                     );
                     storageService.save(toolStates);
                     toolRanBefore = true;
                     continue;
                 }
                 List<WorkflowRun> runsNotInTheNewState = workflowService.getRunsSetDifference(
-                        toolState.runs(),
-                        newState,
-                        toolState.ignoredRunIds()
+                    toolState.runs(),
+                    newState,
+                    toolState.ignoredRunIds()
                 );
 
                 // Ensures augmentedState is a superset of currentState
                 Map<Long, WorkflowRunData> augmentedNewState = workflowService
-                        .askForAdditionalRunData(newState, runsNotInTheNewState);
+                    .askForAdditionalRunData(newState, runsNotInTheNewState);
                 List<Event> workflowEvents = diffingService.computeDiff(
-                        toolState.runs(),
-                        augmentedNewState
+                    toolState.runs(),
+                    augmentedNewState
                 );
                 if (!workflowEvents.isEmpty()) {
                     System.out.println(cliPrinter.prettyPrintOnSeparateLines(workflowEvents));
@@ -109,13 +113,13 @@ public class GhworkApplication {
                 // We don't need to keep tracking the runs that are not in newState,
                 // since they must have completed
                 toolStates.put(
-                        parsedArgs.repository(),
-                        new ToolState(newState, toolState.ignoredRunIds())
+                    parsedArgs.repository(),
+                    new ToolState(newState, toolState.ignoredRunIds())
                 );
                 storageService.save(toolStates);
             }
         } catch (ApiException | CliException e) {
-            System.err.println(e.getMessage());
+            LOG.error("The system encountered an error: {}", e.getMessage());
             System.exit(1);
         }
     }

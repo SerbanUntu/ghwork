@@ -17,16 +17,20 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Persists and retrieves the persisted application data. Abstracts operations with the file system.
  */
 public class StorageService {
 
+    private static final String FILENAME = "data.ser";
+    private static final Logger LOG = LogManager.getLogger(StorageService.class);
+
     private final Path appDir;
     private final Path filePath;
     private final EnvService envService = new EnvService();
-    private static final String FILENAME = "data.ser";
 
     /**
      * Constructor for the service handling persisted application data.
@@ -120,11 +124,12 @@ public class StorageService {
                 Map<Repository, ToolState> castedInput = tryCastingInput(inputObject);
 
                 if (this.envService.isDebugPrintingEnabled()) {
-                    System.out.println("[DEBUG] Read from file: " + this.filePath);
+                    LOG.debug("Read from file: {}", this.filePath);
                 }
                 return castedInput;
             }
         } catch (ClassNotFoundException | ClassCastException | IOException e) {
+            LOG.warn("Failed to read from file: {}. Attempting to recover the data", this.filePath);
             recoverFiles();
             return new HashMap<>();
         }
@@ -143,7 +148,7 @@ public class StorageService {
                 objectOutputStream.flush();
 
                 if (this.envService.isDebugPrintingEnabled()) {
-                    System.out.println("[DEBUG] Saved to file: " + this.filePath);
+                    LOG.debug("Saved to file: {}", this.filePath);
                 }
             }
         } catch (IOException e) {

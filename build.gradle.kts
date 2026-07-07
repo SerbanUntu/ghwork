@@ -40,6 +40,9 @@ dependencies {
 	implementation(libs.jansi)
 	testImplementation(libs.junit.jupiter)
 	testRuntimeOnly(libs.junit.platform.launcher)
+    implementation(libs.log4j.api)
+    runtimeOnly(libs.log4j.core)
+    implementation(libs.spring.context)
 }
 
 tasks.withType<Test> {
