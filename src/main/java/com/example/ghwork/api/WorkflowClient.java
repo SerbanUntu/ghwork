@@ -8,6 +8,8 @@ import com.example.ghwork.json.JsonService;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpRequest;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * The client responsible for making requests to the "List workflow runs for a repository" route.
@@ -15,6 +17,7 @@ import java.net.http.HttpRequest;
 public class WorkflowClient extends GithubClient {
 
     private static final String route = "/actions/runs";
+    private static final Logger LOG = LogManager.getLogger(WorkflowClient.class);
 
     private final HttpRequest request;
     private final JsonService jsonService = new JsonService();
@@ -48,7 +51,7 @@ public class WorkflowClient extends GithubClient {
      */
     public WorkflowResponse fetchData() throws ApiException, CliException {
         if (this.envService.isDebugPrintingEnabled()) {
-            System.out.println("[DEBUG] GET request: " + this.request.uri());
+            LOG.debug("GET request: {}", this.request.uri());
         }
         var response = getResponse(this.request);
         return jsonService.parseWorkflowResponse(response.body());
