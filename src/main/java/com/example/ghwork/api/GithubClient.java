@@ -21,20 +21,21 @@ public abstract class GithubClient {
 
     private static final String API_VERSION = "2022-11-28";
 
-    protected final Repository repository;
     protected final HttpClient client;
     protected final EnvService envService;
+
+    protected Repository repository;
 
     /**
      * The route shared by all requests. Contains the base URL, the owner, and the repository name.
      */
-    protected final String baseRoute;
+    protected String baseRoute;
 
     /**
      * The headers needed when sending requests to the GitHub API, in the form:
      * header, value, header, value.
      */
-    protected final String[] headers;
+    protected String[] headers;
 
     /**
      * Throws a CLI exception if the API returns a 4xx status code due to
@@ -86,16 +87,35 @@ public abstract class GithubClient {
     }
 
     /**
-     * Initializes the HTTP client and request data.
+     * Initializes the HTTP client.
+     *
+     * @param envService The service handling environment variables.
+     */
+    public GithubClient(EnvService envService, HttpClient httpClient) {
+        this.envService = envService;
+        this.client = httpClient;
+    }
+
+    /**
+     * Sets the repository to fetch data from and derives the base API route from it.
+     * Not meant to be called manually during regular execution.
+     * TODO: Replace with a proper factory pattern to ensure the repository stays final.
      *
      * @param repository The data object containing the GitHub repository data.
-     * @param token      The user's personal access token.
      */
-    public GithubClient(Repository repository, AccessToken token) {
+    public void setRepository(Repository repository) {
         this.repository = repository;
-        this.client = HttpClient.newHttpClient();
         this.baseRoute = "https://api.github.com/repos/" + repository.getOwner() + "/" + repository.getRepository();
-        this.envService = new EnvService();
+    }
+
+    /**
+     * Sets the access token used to authenticate requests to the GitHub API.
+     * Not meant to be called manually during regular execution.
+     * TODO: Replace with a proper factory pattern to ensure the access token stays final.
+     *
+     * @param token The user's personal access token.
+     */
+    public void setAccessToken(AccessToken token) {
         this.headers = new String[]{
             "X-GitHub-Api-Version",
             API_VERSION,

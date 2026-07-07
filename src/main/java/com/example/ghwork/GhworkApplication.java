@@ -13,6 +13,7 @@ import com.example.ghwork.domain.ToolState;
 import com.example.ghwork.domain.WorkflowRun;
 import com.example.ghwork.domain.WorkflowRunData;
 import com.example.ghwork.domain.events.Event;
+import com.example.ghwork.ioc.AppConfig;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -23,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 /**
  * The CLI application class. Contains the main() method which starts the application.
@@ -39,15 +41,14 @@ public class GhworkApplication {
      */
     public static void main(String[] args) {
 
-        try {
-            CliArguments parsedArgs = (new ArgumentParser()).parse(args);
-            WorkflowService workflowService = new WorkflowService(
-                parsedArgs.repository(),
-                parsedArgs.accessToken()
-            );
-            DiffingService diffingService = new DiffingService();
-            StorageService storageService = new StorageService();
-            CliPrinter cliPrinter = new CliPrinter();
+        try (AnnotationConfigApplicationContext context =
+                 new AnnotationConfigApplicationContext(AppConfig.class)) {
+            CliArguments parsedArgs = context.getBean(ArgumentParser.class).parse(args);
+            WorkflowService workflowService = context.getBean(WorkflowService.class);
+            workflowService.initialize(parsedArgs.repository(), parsedArgs.accessToken());
+            DiffingService diffingService = context.getBean(DiffingService.class);
+            StorageService storageService = context.getBean(StorageService.class);
+            CliPrinter cliPrinter = context.getBean(CliPrinter.class);
 
             Map<Repository, ToolState> toolStates = storageService.retrieve();
             Instant lastApiCallTimestamp = null;
