@@ -7,6 +7,8 @@ import com.example.ghwork.api.WorkflowResponse;
 import com.example.ghwork.domain.Job;
 import com.example.ghwork.domain.JobStep;
 import com.example.ghwork.domain.WorkflowRun;
+import com.google.gson.FieldNamingPolicy;
+import com.google.gson.GsonBuilder;
 import org.junit.jupiter.api.Test;
 
 import java.time.*;
@@ -16,7 +18,10 @@ public class JsonServiceTests {
 
     private static final LocalDate referenceDate = LocalDate.of(2026, 1, 1);
 
-    private final JsonService sut = new JsonService();
+    private final JsonService sut = new JsonService(new GsonBuilder()
+            .registerTypeAdapter(Instant.class, new InstantDeserializer())
+            .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+            .create());
 
     private Instant makeInstant(int hour, int minute, int second) {
         return LocalDateTime.of(

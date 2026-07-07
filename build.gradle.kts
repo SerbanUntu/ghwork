@@ -1,3 +1,5 @@
+import kotlin.collections.listOf
+
 plugins {
 	application
 	checkstyle
@@ -9,6 +11,7 @@ description = "Queries the GitHub workflows of a repository and displays live in
 
 checkstyle {
 	toolVersion = "13.7.0"
+    sourceSets = listOf(project.sourceSets.main.get())
 }
 
 tasks.withType<Checkstyle> {
@@ -40,6 +43,9 @@ dependencies {
 	implementation(libs.jansi)
 	testImplementation(libs.junit.jupiter)
 	testRuntimeOnly(libs.junit.platform.launcher)
+    implementation(libs.log4j.api)
+    runtimeOnly(libs.log4j.core)
+    implementation(libs.spring.context)
 }
 
 tasks.withType<Test> {

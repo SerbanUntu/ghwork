@@ -6,10 +6,12 @@ import com.example.ghwork.cli.exceptions.TooManyArgumentsException;
 import com.example.ghwork.domain.AccessToken;
 import com.example.ghwork.domain.Repository;
 import java.util.Arrays;
+import org.springframework.stereotype.Service;
 
 /**
  * Handles validation of command line arguments entered by the user. Acts as a singleton.
  */
+@Service
 public class ArgumentParser {
 
     /**

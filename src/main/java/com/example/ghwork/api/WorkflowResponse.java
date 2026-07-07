@@ -8,7 +8,16 @@ import java.util.List;
  * from the "List workflow runs for a repository" route.
  */
 public record WorkflowResponse(
-        int totalCount,
-        List<WorkflowRun> workflowRuns
+    int totalCount,
+    List<WorkflowRun> workflowRuns
 ) {
+
+    /**
+     * Constructor for a WorkflowResponse value object, used to enforce immutability.
+     *
+     * @param workflowRuns The execution states of all workflows returned by the API.
+     */
+    public WorkflowResponse {
+        workflowRuns = List.copyOf(workflowRuns);
+    }
 }

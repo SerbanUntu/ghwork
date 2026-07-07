@@ -7,10 +7,12 @@ import com.google.gson.JsonParseException;
 import java.lang.reflect.Type;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
+import org.springframework.stereotype.Service;
 
 /**
  * Gson deserializer for an {@link java.time.Instant} object.
  */
+@Service
 public class InstantDeserializer implements JsonDeserializer<Instant> {
 
     @Override

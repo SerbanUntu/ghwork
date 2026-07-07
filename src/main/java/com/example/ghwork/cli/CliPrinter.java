@@ -8,10 +8,12 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.stereotype.Service;
 
 /**
  * Handles utilities for string padding and formatting for the events' data.
  */
+@Service
 public class CliPrinter {
 
     private static final String TIMESTAMP_FORMAT = "yyyy-MM-dd:HH:mm:ssX";

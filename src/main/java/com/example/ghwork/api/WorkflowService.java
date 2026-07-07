@@ -2,8 +2,6 @@ package com.example.ghwork.api;
 
 import com.example.ghwork.api.exceptions.ApiException;
 import com.example.ghwork.cli.exceptions.CliException;
-import com.example.ghwork.domain.AccessToken;
-import com.example.ghwork.domain.Repository;
 import com.example.ghwork.domain.WorkflowRun;
 import com.example.ghwork.domain.WorkflowRunData;
 import java.util.HashMap;
@@ -15,6 +13,7 @@ import java.util.stream.Collectors;
 /**
  * Abstraction around multiple API calls.
  * Exposes a method to map workflow data to respective job data.
+ * Instantiated via {@link WorkflowServiceFactory}.
  */
 public class WorkflowService {
 
@@ -23,14 +22,14 @@ public class WorkflowService {
 
     /**
      * Constructor for a service managing GitHub clients for jobs and workflows.
+     * Meant to be called by {@link WorkflowServiceFactory}.
      *
-     * @param repository  The repository to fetch data from.
-     * @param accessToken The access token needed to have access to the repository.
-     * @throws ApiException If URI construction for the underlying workflow client fails.
+     * @param jobClient      The client for fetching job data.
+     * @param workflowClient The client for fetching workflow data.
      */
-    public WorkflowService(Repository repository, AccessToken accessToken) throws ApiException {
-        this.jobClient = new JobClient(repository, accessToken);
-        this.workflowClient = new WorkflowClient(repository, accessToken);
+    WorkflowService(JobClient jobClient, WorkflowClient workflowClient) {
+        this.jobClient = jobClient;
+        this.workflowClient = workflowClient;
     }
 
     /**

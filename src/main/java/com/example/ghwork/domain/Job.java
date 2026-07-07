@@ -18,4 +18,13 @@ public record Job(
     Instant completedAt,
     List<JobStep> steps
 ) implements Serializable {
+
+    /**
+     * Constructor for a Job value object, used to enforce immutability.
+     *
+     * @param steps The execution states of all steps that are part of this job.
+     */
+    public Job {
+        steps = List.copyOf(steps);
+    }
 }
