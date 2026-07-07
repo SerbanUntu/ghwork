@@ -19,10 +19,12 @@ import java.util.Locale;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.stereotype.Service;
 
 /**
  * Persists and retrieves the persisted application data. Abstracts operations with the file system.
  */
+@Service
 public class StorageService {
 
     private static final String FILENAME = "data.ser";
@@ -30,12 +32,15 @@ public class StorageService {
 
     private final Path appDir;
     private final Path filePath;
-    private final EnvService envService = new EnvService();
+    private final EnvService envService;
 
     /**
      * Constructor for the service handling persisted application data.
+     *
+     * @param envService The service handling environment variables.
      */
-    public StorageService() {
+    public StorageService(EnvService envService) {
+        this.envService = envService;
         String os = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
         String userHome = System.getProperty("user.home");
         Path path;

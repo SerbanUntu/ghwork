@@ -11,11 +11,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
 
 /**
  * Abstraction around multiple API calls.
  * Exposes a method to map workflow data to respective job data.
  */
+@Service
 public class WorkflowService {
 
     private final JobClient jobClient;
@@ -24,13 +26,27 @@ public class WorkflowService {
     /**
      * Constructor for a service managing GitHub clients for jobs and workflows.
      *
-     * @param repository  The repository to fetch data from.
-     * @param accessToken The access token needed to have access to the repository.
-     * @throws ApiException If URI construction for the underlying workflow client fails.
+     * @param jobClient      The client for fetching job data.
+     * @param workflowClient The client for fetching workflow data.
      */
-    public WorkflowService(Repository repository, AccessToken accessToken) throws ApiException {
-        this.jobClient = new JobClient(repository, accessToken);
-        this.workflowClient = new WorkflowClient(repository, accessToken);
+    public WorkflowService(JobClient jobClient, WorkflowClient workflowClient) {
+        this.jobClient = jobClient;
+        this.workflowClient = workflowClient;
+    }
+
+    /**
+     * Sets the repository to fetch data from and the necessary access token on the GitHub clients.
+     * Not meant to be called manually during regular execution.
+     * TODO: Replace with a proper factory pattern to ensure the repository stays final.
+     *
+     * @param repository The repository to fetch data from.
+     */
+    public void initialize(Repository repository, AccessToken accessToken) {
+        this.jobClient.setRepository(repository);
+        this.workflowClient.setRepository(repository);
+        this.jobClient.setAccessToken(accessToken);
+        this.workflowClient.setAccessToken(accessToken);
+        this.workflowClient.initialize();
     }
 
     /**
