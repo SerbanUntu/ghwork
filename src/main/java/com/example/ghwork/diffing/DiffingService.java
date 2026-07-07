@@ -17,11 +17,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.springframework.stereotype.Service;
 
 /**
  * Maps the difference in states of the workflow runs to events that happened between those states.
  * Adapter for multiple calls to a REST API, which only returns state at discrete instances of time.
  */
+@Service
 public class DiffingService {
 
     /**

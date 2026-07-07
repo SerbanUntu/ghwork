@@ -5,10 +5,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 import java.util.Properties;
+import org.springframework.stereotype.Service;
 
 /**
  * Handles operations with the environment variables of the executable.
  */
+@Service
 public class EnvService {
 
     private final Properties properties = new Properties();

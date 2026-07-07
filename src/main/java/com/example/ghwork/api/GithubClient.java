@@ -21,9 +21,10 @@ public abstract class GithubClient {
 
     private static final String API_VERSION = "2022-11-28";
 
-    protected final Repository repository;
     protected final HttpClient client;
     protected final EnvService envService;
+
+    protected final Repository repository;
 
     /**
      * The route shared by all requests. Contains the base URL, the owner, and the repository name.
@@ -86,21 +87,28 @@ public abstract class GithubClient {
     }
 
     /**
-     * Initializes the HTTP client and request data.
+     * Initializes the HTTP client and data.
      *
-     * @param repository The data object containing the GitHub repository data.
-     * @param token      The user's personal access token.
+     * @param envService   The service handling environment variables.
+     * @param httpClient   The HTTP client used to make requests.
+     * @param repository   The data object for the GitHub repository.
+     * @param accessToken  The user's personal access token.
      */
-    public GithubClient(Repository repository, AccessToken token) {
+    protected GithubClient(
+        EnvService envService,
+        HttpClient httpClient,
+        Repository repository,
+        AccessToken accessToken
+    ) {
+        this.envService = envService;
+        this.client = httpClient;
         this.repository = repository;
-        this.client = HttpClient.newHttpClient();
         this.baseRoute = "https://api.github.com/repos/" + repository.getOwner() + "/" + repository.getRepository();
-        this.envService = new EnvService();
         this.headers = new String[]{
             "X-GitHub-Api-Version",
             API_VERSION,
             "Authorization",
-            "Bearer " + token.token()
+            "Bearer " + accessToken.token()
         };
     }
 }

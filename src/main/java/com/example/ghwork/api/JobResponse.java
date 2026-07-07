@@ -11,4 +11,13 @@ public record JobResponse(
     int totalCount,
     List<Job> jobs
 ) {
+
+    /**
+     * Constructor for a JobResponse value object, used to enforce immutability.
+     *
+     * @param jobs The execution states of all jobs returned by the API.
+     */
+    public JobResponse {
+        jobs = List.copyOf(jobs);
+    }
 }

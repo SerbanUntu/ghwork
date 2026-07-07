@@ -2,15 +2,14 @@ package com.example.ghwork.json;
 
 import com.example.ghwork.api.JobResponse;
 import com.example.ghwork.api.WorkflowResponse;
-import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import java.time.Instant;
+import org.springframework.stereotype.Service;
 
 /**
  * A wrapper around Google's Gson library, exposing only methods for
  * serializing/deserializing domain data.
  */
+@Service
 public class JsonService {
 
     private final Gson gson;
@@ -18,11 +17,8 @@ public class JsonService {
     /**
      * Constructor for the service handling JSON (de)serialization.
      */
-    public JsonService() {
-        this.gson = new GsonBuilder()
-                .registerTypeAdapter(Instant.class, new InstantDeserializer())
-                .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-                .create();
+    public JsonService(Gson gson) {
+        this.gson = gson;
     }
 
     /**

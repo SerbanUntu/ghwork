@@ -1,12 +1,14 @@
 package com.example.ghwork.api;
 
 import com.example.ghwork.api.exceptions.ApiException;
+import com.example.ghwork.cli.EnvService;
 import com.example.ghwork.cli.exceptions.CliException;
 import com.example.ghwork.domain.AccessToken;
 import com.example.ghwork.domain.Repository;
 import com.example.ghwork.json.JsonService;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
@@ -14,13 +16,17 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * The client responsible for making requests to the "List jobs for a workflow run" route.
+ * Instantiated via {@link JobClientFactory}.
  */
 public class JobClient extends GithubClient {
 
-    private final JsonService jsonService = new JsonService();
+    private static final Logger LOG = LogManager.getLogger(JobClient.class);
+    private final JsonService jsonService;
 
     /**
      * Generates the subroute given a workflow run id.
@@ -35,12 +41,23 @@ public class JobClient extends GithubClient {
 
     /**
      * Constructor for a client that fetches information about GitHub Actions jobs.
+     * Meant to be called by {@link JobClientFactory}.
      *
-     * @param repository  The repository to fetch job data from.
-     * @param accessToken The access token needed for accessing the repository.
+     * @param envService   The service handling environment variables.
+     * @param httpClient   The HTTP client used to make requests.
+     * @param jsonService  The service handling JSON (de)serialization.
+     * @param repository   The data object containing the GitHub repository data.
+     * @param accessToken  The user's personal access token.
      */
-    public JobClient(Repository repository, AccessToken accessToken) {
-        super(repository, accessToken);
+    JobClient(
+        EnvService envService,
+        HttpClient httpClient,
+        JsonService jsonService,
+        Repository repository,
+        AccessToken accessToken
+    ) {
+        super(envService, httpClient, repository, accessToken);
+        this.jsonService = jsonService;
     }
 
     /**
@@ -67,7 +84,7 @@ public class JobClient extends GithubClient {
             .stream()
             .map(uri -> {
                 if (this.envService.isDebugPrintingEnabled()) {
-                    System.out.println("[DEBUG] GET request: " + uri);
+                    LOG.debug("GET request: {}", uri);
                 }
                 return HttpRequest.newBuilder().uri(uri).headers(headers).build();
             })
