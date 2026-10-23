@@ -5,7 +5,7 @@ plugins {
 	checkstyle
 }
 
-group = "com.example"
+group = "com.ghwork"
 version = "0.1.0"
 description = "Queries the GitHub workflows of a repository and displays live information."
 
@@ -19,7 +19,7 @@ tasks.withType<Checkstyle> {
 }
 
 application {
-	mainClass.set("com.example.ghwork.GhworkApplication")
+	mainClass.set("com.ghwork.GhworkApplication")
 }
 
 tasks.named<Jar>("jar") {

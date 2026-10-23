@@ -37,7 +37,7 @@ The project uses Gradle for dependency management with version catalogs defined 
 - `org.junit.jupiter:junit-jupiter:6.0.1` - JUnit 5 testing framework
 - `org.junit.platform:junit-platform-launcher:6.0.1` - Test execution platform
 
-The application uses Java 21 with the application plugin configured. The main class is `com.example.ghwork.GhworkApplication`.
+The application uses Java 21 with the application plugin configured. The main class is `com.ghwork.GhworkApplication`.
 
 ### Project Structure
 
