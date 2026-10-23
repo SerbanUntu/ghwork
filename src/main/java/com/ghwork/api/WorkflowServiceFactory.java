@@ -32,12 +32,17 @@ public class WorkflowServiceFactory {
      *
      * @param repository  The repository to fetch data from.
      * @param accessToken The user's personal access token.
+     * @param apiBaseRoute The protocol and domain of the URL.
      * @return A new {@link WorkflowService} object.
      */
-    public WorkflowService create(Repository repository, AccessToken accessToken) {
+    public WorkflowService create(
+        Repository repository,
+        AccessToken accessToken,
+        String apiBaseRoute
+    ) {
         return new WorkflowService(
-            jobClientFactory.create(repository, accessToken),
-            workflowClientFactory.create(repository, accessToken)
+            jobClientFactory.create(repository, accessToken, apiBaseRoute),
+            workflowClientFactory.create(repository, accessToken, apiBaseRoute)
         );
     }
 }

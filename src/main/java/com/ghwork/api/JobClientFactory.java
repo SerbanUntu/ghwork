@@ -35,9 +35,17 @@ public class JobClientFactory {
      *
      * @param repository  The data object containing the GitHub repository data.
      * @param accessToken The user's personal access token.
+     * @param apiBaseRoute The protocol and domain of the URL.
      * @return A new {@link JobClient} object.
      */
-    public JobClient create(Repository repository, AccessToken accessToken) {
-        return new JobClient(envService, httpClient, jsonService, repository, accessToken);
+    public JobClient create(Repository repository, AccessToken accessToken, String apiBaseRoute) {
+        return new JobClient(
+            envService,
+            httpClient,
+            jsonService,
+            repository,
+            accessToken,
+            apiBaseRoute
+        );
     }
 }

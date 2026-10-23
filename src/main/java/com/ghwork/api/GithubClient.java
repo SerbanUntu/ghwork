@@ -1,10 +1,11 @@
 package com.ghwork.api;
 
 import com.ghwork.api.exceptions.ApiException;
+import com.ghwork.api.exceptions.ClientError;
+import com.ghwork.api.exceptions.NetworkError;
 import com.ghwork.api.exceptions.ServerError;
 import com.ghwork.cli.EnvService;
 import com.ghwork.cli.exceptions.CliException;
-import com.ghwork.cli.exceptions.GenericClientError;
 import com.ghwork.cli.exceptions.InexistentRepositoryException;
 import com.ghwork.cli.exceptions.InvalidAccessTokenException;
 import com.ghwork.domain.AccessToken;
@@ -13,6 +14,7 @@ import java.io.IOException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import javax.net.ssl.SSLException;
 
 /**
  * Abstracts the interactions with the GitHub's REST API.
@@ -32,14 +34,14 @@ public abstract class GithubClient {
     protected final String baseRoute;
 
     /**
-     * The headers needed when sending requests to the GitHub API, in the form:
-     * header, value, header, value.
+     * The headers needed when sending requests to the GitHub API, in the form: header, value,
+     * header, value.
      */
     protected final String[] headers;
 
     /**
-     * Throws a CLI exception if the API returns a 4xx status code due to
-     * incorrect parameters passed to the CLI.
+     * Throws a CLI exception if the API returns a 4xx status code due to incorrect parameters
+     * passed to the CLI.
      *
      * @param response The HTTP Response object.
      * @throws CliException If the repository is not found or the access token is invalid.
@@ -55,7 +57,7 @@ public abstract class GithubClient {
                 break;
         }
         if (code >= 400 && code <= 499) {
-            throw new GenericClientError(code);
+            throw new ClientError(code);
         }
         if (code >= 500 && code <= 599) {
             throw new ServerError(code);
@@ -63,8 +65,8 @@ public abstract class GithubClient {
     }
 
     /**
-     * Wrapper around a normal `client.send` call that turns technical errors
-     * into user-facing errors and check the returned status code.
+     * Wrapper around a normal `client.send` call that turns technical errors into user-facing
+     * errors and check the returned status code.
      *
      * @param request The request object to send to the GitHub API.
      * @return A valid response from the GitHub server.
@@ -79,8 +81,10 @@ public abstract class GithubClient {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new ApiException(e.getMessage());
+        } catch (SSLException e) {
+            throw new ApiException(e.getMessage(), e);
         } catch (IOException e) {
-            throw new ApiException(e.getMessage());
+            throw new NetworkError(e);
         }
         checkResponse(response);
         return response;
@@ -89,21 +93,22 @@ public abstract class GithubClient {
     /**
      * Initializes the HTTP client and data.
      *
-     * @param envService   The service handling environment variables.
-     * @param httpClient   The HTTP client used to make requests.
-     * @param repository   The data object for the GitHub repository.
-     * @param accessToken  The user's personal access token.
+     * @param envService The service handling environment variables.
+     * @param httpClient The HTTP client used to make requests.
+     * @param repository The data object for the GitHub repository.
+     * @param accessToken The user's personal access token.
+     * @param apiBaseRoute The protocol and domain of the URL.
      */
-    protected GithubClient(
-        EnvService envService,
-        HttpClient httpClient,
-        Repository repository,
-        AccessToken accessToken
-    ) {
+    protected GithubClient(EnvService envService, HttpClient httpClient, Repository repository,
+        AccessToken accessToken, String apiBaseRoute) {
         this.envService = envService;
         this.client = httpClient;
         this.repository = repository;
-        this.baseRoute = "https://api.github.com/repos/" + repository.getOwner() + "/" + repository.getRepository();
+        this.baseRoute = apiBaseRoute
+            + "/repos/"
+            + repository.getOwner()
+            + "/"
+            + repository.getRepository();
         this.headers = new String[]{
             "X-GitHub-Api-Version",
             API_VERSION,

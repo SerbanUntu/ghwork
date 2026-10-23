@@ -42,9 +42,11 @@ dependencies {
 	implementation(libs.gson)
 	implementation(libs.jansi)
 	testImplementation(libs.junit.jupiter)
+	testImplementation(libs.wiremock)
+	testImplementation(libs.log4j.core.test)
 	testRuntimeOnly(libs.junit.platform.launcher)
     implementation(libs.log4j.api)
-    runtimeOnly(libs.log4j.core)
+    implementation(libs.log4j.core)
     implementation(libs.spring.context)
 }
 
