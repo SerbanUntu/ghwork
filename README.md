@@ -31,7 +31,7 @@ The project uses Gradle for dependency management with version catalogs defined 
 
 **Runtime Dependencies:**
 - `com.google.code.gson:gson:2.13.2` - JSON deserialization for GitHub API responses
-- `org.fusesource.jansi:jansi:2.4.2` - ANSI terminal colors library for simpler logic
+- `org.fusesource.jansi:jansi:2.4.3` - ANSI terminal colors library for simpler logic
 
 **Test Dependencies:**
 - `org.junit.jupiter:junit-jupiter:6.0.1` - JUnit 5 testing framework
