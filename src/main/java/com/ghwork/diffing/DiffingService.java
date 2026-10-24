@@ -17,6 +17,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 /**
@@ -65,11 +67,13 @@ public class DiffingService {
                 Job jobBefore = jobIdsBefore.contains(jobId) ? jobsBefore.get(jobId) : null;
                 events.addAll(compareJobs(runAfter, jobBefore, jobAfter));
 
-                for (int i = 0; i < jobAfter.steps().size(); i++) {
-                    JobStep stepAfter = jobAfter.steps().get(i);
-                    JobStep stepBefore = (jobBefore == null || jobBefore.steps().size() <= i)
-                        ? null
-                        : jobBefore.steps().get(i);
+                Map<Integer, JobStep> stepsBefore = jobBefore == null
+                    ? Map.of()
+                    : jobBefore.steps().stream()
+                        .collect(Collectors.toMap(
+                            JobStep::number, Function.identity(), (first, second) -> first));
+                for (JobStep stepAfter : jobAfter.steps()) {
+                    JobStep stepBefore = stepsBefore.get(stepAfter.number());
                     events.addAll(compareSteps(runAfter, jobAfter, stepBefore, stepAfter));
                 }
             }
@@ -87,12 +91,12 @@ public class DiffingService {
      * @return The domain status used for ordering
      */
     private WorkflowRunStatus getWorkflowRunStatus(WorkflowRun workflowRun) {
-        if (workflowRun == null) {
+        if (workflowRun == null || workflowRun.status() == null) {
             return WorkflowRunStatus.INITIAL;
         }
         return switch (workflowRun.status()) {
-            case "waiting", "requested" -> WorkflowRunStatus.INITIAL;
-            default -> WorkflowRunStatus.AFTER_QUEUEING;
+            case "queued", "in_progress", "completed" -> WorkflowRunStatus.AFTER_QUEUEING;
+            default -> WorkflowRunStatus.INITIAL;
         };
     }
 
@@ -104,7 +108,7 @@ public class DiffingService {
      * @return The domain status used for ordering
      */
     private JobStatus getJobStatus(Job job) {
-        if (job == null) {
+        if (job == null || job.status() == null) {
             return JobStatus.INITIAL;
         }
         if (job.status().equals("in_progress")) {
@@ -124,7 +128,7 @@ public class DiffingService {
      * @return The domain status used for ordering
      */
     private StepStatus getStepStatus(JobStep step) {
-        if (step == null) {
+        if (step == null || step.status() == null) {
             return StepStatus.INITIAL;
         }
         if (step.status().equals("queued")) {
@@ -133,7 +137,7 @@ public class DiffingService {
         if (step.status().equals("in_progress")) {
             return StepStatus.IN_PROGRESS;
         }
-        if (step.conclusion() == null) {
+        if (step.conclusion() == null || !step.status().equals("completed")) {
             return StepStatus.INITIAL;
         }
 

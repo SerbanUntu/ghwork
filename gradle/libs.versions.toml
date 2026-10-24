@@ -5,6 +5,7 @@ jansi = "2.4.3"
 log4j = "2.26.1"
 spring = "7.0.9"
 wiremock = "3.13.2"
+jqwik = "1.10.2"
 
 [libraries]
 junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit" }
@@ -16,3 +17,4 @@ log4j-core = { group = "org.apache.logging.log4j", name = "log4j-core", version.
 log4j-core-test = { group = "org.apache.logging.log4j", name = "log4j-core-test", version.ref = "log4j" }
 spring-context = { group = "org.springframework", name = "spring-context", version.ref = "spring" }
 wiremock = { group = "org.wiremock", name = "wiremock", version.ref = "wiremock" }
+jqwik = { group = "net.jqwik", name = "jqwik", version.ref = "jqwik" }

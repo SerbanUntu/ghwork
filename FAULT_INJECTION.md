@@ -1,7 +1,7 @@
 # Fault injection
 
 The tests in `GhworkApplicationTests` run the whole application against a fake GitHub API
-(through [WireMock](https://wiremock.org/)) that returns errors, broken responses, or no response at all.
+(through [WireMock](https://wiremock.org/)) that returns errors, invalid JSON, no response, etc.
 
 Below is a list of features that were added to improve error handling, as well as bugs discovered after adding the tests.
 

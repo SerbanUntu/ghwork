@@ -44,6 +44,7 @@ dependencies {
 	testImplementation(libs.junit.jupiter)
 	testImplementation(libs.wiremock)
 	testImplementation(libs.log4j.core.test)
+	testImplementation(libs.jqwik)
 	testRuntimeOnly(libs.junit.platform.launcher)
     implementation(libs.log4j.api)
     implementation(libs.log4j.core)
