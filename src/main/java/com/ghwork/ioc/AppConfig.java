@@ -1,5 +1,6 @@
 package com.ghwork.ioc;
 
+import com.ghwork.cli.EnvService;
 import com.ghwork.json.InstantDeserializer;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
@@ -44,10 +45,12 @@ public class AppConfig {
     /**
      * Method for producing the {@link HttpClient} bean.
      *
+     * @param envService The {@link EnvService} for fetching the connection timeout from the
+     *                   environment.
      * @return The {@link HttpClient} bean.
      */
     @Bean
-    public HttpClient httpClient() {
-        return HttpClient.newHttpClient();
+    public HttpClient httpClient(EnvService envService) {
+        return HttpClient.newBuilder().connectTimeout(envService.getConnectTimeout()).build();
     }
 }

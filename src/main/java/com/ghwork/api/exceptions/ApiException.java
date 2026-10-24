@@ -6,12 +6,34 @@ package com.ghwork.api.exceptions;
  */
 public class ApiException extends RuntimeException {
 
+    private static final String PREFIX =
+        "An error occurred and the connection terminated abruptly. Details:\n";
+
     /**
      * Constructor for an API Exception.
      *
      * @param message The message describing the type of connection error that happened.
      */
     public ApiException(String message) {
-        super("An error occurred and the connection terminated abruptly. Details:\n" + message);
+        super(PREFIX + message);
+    }
+
+    /**
+     * Constructor for an API Exception caused by another exception.
+     *
+     * @param message The message describing the type of connection error that happened.
+     * @param cause The underlying exception.
+     */
+    public ApiException(String message, Throwable cause) {
+        super(PREFIX + message, cause);
+    }
+
+    /**
+     * Whether repeating the request that caused this exception could succeed.
+     *
+     * @return {@code true} if the request can be retried, {@code false} otherwise.
+     */
+    public boolean isRetriable() {
+        return false;
     }
 }

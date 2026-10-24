@@ -5,6 +5,8 @@ package com.ghwork.api.exceptions;
  */
 public class ServerError extends ApiException {
 
+    private final int code;
+
     /**
      * Constructor for an HTTP server error.
      *
@@ -12,6 +14,7 @@ public class ServerError extends ApiException {
      */
     public ServerError(int code) {
         super(validateAndBuildMessage(code));
+        this.code = code;
     }
 
     /**
@@ -24,9 +27,27 @@ public class ServerError extends ApiException {
     private static String validateAndBuildMessage(int code) {
         if (code < 500 || code > 599) {
             throw new IllegalArgumentException(
-                "ServerError expects a 5xx status code, got: " + code
-            );
+                "ServerError expects a 5xx status code, got: " + code);
         }
         return "An HTTP Server Error occurred. Status code " + code + ".";
+    }
+
+    /**
+     * Returns the HTTP status code of the response.
+     *
+     * @return The HTTP status code (5xx).
+     */
+    public int getCode() {
+        return code;
+    }
+
+    /**
+     * Whether the server error can be retried (500, 502, 503, 504).
+     *
+     * @return {@code true} if the request can be retried, {@code false} otherwise.
+     */
+    @Override
+    public boolean isRetriable() {
+        return code == 500 || code == 502 || code == 503 || code == 504;
     }
 }

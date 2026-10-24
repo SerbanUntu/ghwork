@@ -2,6 +2,7 @@ package com.ghwork.api;
 
 import com.ghwork.api.exceptions.ApiException;
 import com.ghwork.cli.exceptions.CliException;
+import com.ghwork.domain.Job;
 import com.ghwork.domain.WorkflowRun;
 import com.ghwork.domain.WorkflowRunData;
 import java.util.HashMap;
@@ -45,18 +46,22 @@ public class WorkflowService {
         List<WorkflowRun> runs,
         List<JobResponse> jobResponses
     ) {
-        Map<Long, WorkflowRunData> result = new HashMap<>();
+        Map<Long, Map<Long, Job>> jobsByRunId = new HashMap<>();
 
         for (var run : runs) {
-            result.put(run.id(), new WorkflowRunData(run, new HashMap<>()));
+            jobsByRunId.put(run.id(), new HashMap<>());
         }
 
         for (var response : jobResponses) {
             for (var job : response.jobs()) {
-                result.get(job.runId()).jobs().put(job.id(), job);
+                jobsByRunId.get(job.runId()).put(job.id(), job);
             }
         }
 
+        Map<Long, WorkflowRunData> result = new HashMap<>();
+        for (final var run : runs) {
+            result.put(run.id(), new WorkflowRunData(run, jobsByRunId.get(run.id())));
+        }
         return result;
     }
 

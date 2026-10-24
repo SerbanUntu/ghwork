@@ -19,6 +19,7 @@ import java.util.Locale;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -39,6 +40,7 @@ public class StorageService {
      *
      * @param envService The service handling environment variables.
      */
+    @Autowired
     public StorageService(EnvService envService) {
         this.envService = envService;
         String os = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
@@ -62,13 +64,25 @@ public class StorageService {
     }
 
     /**
-     * Validates an object read from the {@link ObjectInputStream}
-     * before casting it to the tool state class.
+     * Constructor for the service handling persisted application data.
+     *
+     * @param envService The service handling environment variables.
+     * @param filePath The file where to store the persisted application data.
+     */
+    public StorageService(EnvService envService, Path filePath) {
+        this.envService = envService;
+        this.filePath = filePath;
+        this.appDir = filePath.getParent();
+    }
+
+    /**
+     * Validates an object read from the {@link ObjectInputStream} before casting it to the tool
+     * state class.
      *
      * @param inputObject A plain object, directly read from the input stream.
      * @return The cast object
-     * @throws ClassCastException If the object does not respect the structure of
-     *                            the tool state class
+     * @throws ClassCastException If the object does not respect the structure of the tool state
+     *                            class
      */
     private Map<Repository, ToolState> tryCastingInput(Object inputObject)
         throws ClassCastException {
@@ -85,8 +99,7 @@ public class StorageService {
             }
         }
         throw new ClassCastException(
-            "Read object cannot be cast into a map of repositories to tool states."
-        );
+            "Read object cannot be cast into a map of repositories to tool states.");
     }
 
     /**

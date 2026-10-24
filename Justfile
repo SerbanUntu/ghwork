@@ -1,3 +1,9 @@
+build:
+    ./gradlew build
+
+dist:
+    ./gradlew installDist
+
 checkstyle:
     ./gradlew checkstyleMain
 

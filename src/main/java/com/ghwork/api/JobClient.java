@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,31 +33,27 @@ public class JobClient extends GithubClient {
      * Generates the subroute given a workflow run id.
      *
      * @param runId The id of the workflow run.
-     * @return The generated subroute, to be appended to the base route
-     *     provided by {@link GithubClient}.
+     * @return The generated subroute, to be appended to the base route provided by
+     *         {@link GithubClient}.
      */
     private static String getRoute(long runId) {
         return "/actions/runs/" + runId + "/jobs";
     }
 
     /**
-     * Constructor for a client that fetches information about GitHub Actions jobs.
-     * Meant to be called by {@link JobClientFactory}.
+     * Constructor for a client that fetches information about GitHub Actions jobs. Meant to be
+     * called by {@link JobClientFactory}.
      *
-     * @param envService   The service handling environment variables.
-     * @param httpClient   The HTTP client used to make requests.
-     * @param jsonService  The service handling JSON (de)serialization.
-     * @param repository   The data object containing the GitHub repository data.
-     * @param accessToken  The user's personal access token.
+     * @param envService The service handling environment variables.
+     * @param httpClient The HTTP client used to make requests.
+     * @param jsonService The service handling JSON (de)serialization.
+     * @param repository The data object containing the GitHub repository data.
+     * @param accessToken The user's personal access token.
+     * @param apiBaseRoute The protocol and domain of the URL.
      */
-    JobClient(
-        EnvService envService,
-        HttpClient httpClient,
-        JsonService jsonService,
-        Repository repository,
-        AccessToken accessToken
-    ) {
-        super(envService, httpClient, repository, accessToken);
+    JobClient(EnvService envService, HttpClient httpClient, JsonService jsonService,
+        Repository repository, AccessToken accessToken, String apiBaseRoute) {
+        super(envService, httpClient, repository, accessToken, apiBaseRoute);
         this.jsonService = jsonService;
     }
 
@@ -86,15 +83,21 @@ public class JobClient extends GithubClient {
                 if (this.envService.isDebugPrintingEnabled()) {
                     LOG.debug("GET request: {}", uri);
                 }
-                return HttpRequest.newBuilder().uri(uri).headers(headers).build();
+                return HttpRequest.newBuilder().uri(uri).headers(headers)
+                    .timeout(envService.getRequestTimeout()).build();
             })
-            .map(request -> CompletableFuture.supplyAsync(() -> getResponse(request))
-                .exceptionally(e -> {
-                    throw new ApiException(e.getMessage());
-                }))
+            .map(request -> CompletableFuture.supplyAsync(() -> getResponse(request)))
             .toList();
 
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[0])).join();
+        try {
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[0])).join();
+        } catch (CompletionException e) {
+            // Rethrow the original exception to report it as well
+            if (e.getCause() instanceof RuntimeException cause) {
+                throw cause;
+            }
+            throw new ApiException(e.getMessage(), e);
+        }
 
         return futures
             .stream()

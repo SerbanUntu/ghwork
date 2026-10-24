@@ -34,20 +34,23 @@ public class WorkflowClient extends GithubClient {
      * @param jsonService  The service handling JSON (de)serialization.
      * @param repository   The data object containing the GitHub repository data.
      * @param accessToken  The user's personal access token.
+     * @param apiBaseRoute The protocol and domain of the URL.
      */
     WorkflowClient(
         EnvService envService,
         HttpClient httpClient,
         JsonService jsonService,
         Repository repository,
-        AccessToken accessToken
+        AccessToken accessToken,
+        String apiBaseRoute
     ) {
-        super(envService, httpClient, repository, accessToken);
+        super(envService, httpClient, repository, accessToken, apiBaseRoute);
         this.jsonService = jsonService;
         try {
             this.request = HttpRequest.newBuilder()
                 .uri(new URI(baseRoute + route))
                 .headers(headers)
+                .timeout(envService.getRequestTimeout())
                 .build();
         } catch (URISyntaxException e) {
             throw new ApiException(e.getMessage());
